@@ -1,0 +1,27 @@
+{
+  "name": "kingjs",
+  "version": "1.0.0",
+  "description": "Discord Bot for Seven Deadly Sins Grand Cross",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Helix",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WhoIsAlphaHelix/evilmortybot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WhoIsAlphaHelix/evilmortybot/issues"
+  },
+  "homepage": "https://github.com/WhoIsAlphaHelix/evilmortybot#readme",
+  "dependencies": {
+    "@discordjs/builders": "^0.6.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "discord-api-types": "^0.23.1",
+    "discord.js": "^13.1.0",
+    "sqlite3": "^5.0.2"
+  }
+}
