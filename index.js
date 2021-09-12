@@ -1,5 +1,5 @@
 const {Client, Collection, Intents} = require('discord.js');
-const {token} = require('./config.json');
+const {token} = require('./data/config.json');
 const fs = require("fs");
 const database_helper = require('./utils/database_helper.js')
 

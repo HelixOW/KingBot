@@ -283,7 +283,7 @@ class Unit {
         this.race = race
         this.event = event
         this.affection = affection
-        this.icon_path = icon_path
+        this.icon_path = icon_path.replace("{}", this.id)
         this.jp = jp
         this.emoji = `<:${this.id > 9 ? this.id : "0" + this.id}:${emoji}>`
         this.home_banners = home_banner
@@ -305,16 +305,18 @@ class Unit {
             .setColor(Type.to_discord_color(this.type))
 
         if(this.alt_names.length > 0)
-            embed.addField("Alternative Names", `\`\`\`${this.alt_names.join(",\n")}\`\`\``)
+            embed.addField("Alternative Names", `\`\`\`${this.alt_names.join(",\n")}\`\`\``, true)
 
-        embed.addField("Type", `\`\`\`${this.type}\`\`\``)
-            .addField("Grade", `\`\`\`${this.grade}\`\`\``)
-            .addField("Race", `\`\`\`${this.race}\`\`\``)
-            .addField("Event", `\`\`\`${this.event}\`\`\``)
-            .addField("Affection", `\`\`\`${this.affection}\`\`\``)
-            .addField("JP", `\`\`\`${this.jp ? "Yes" : "No"}\`\`\``)
-            .addField("ID", `\`\`\`${this.id}\`\`\``)
-            .addField("Emoji", `\`\`\`${this.emoji}\`\`\``)
+        embed.addField("Type", `\`\`\`${this.type}\`\`\``, true)
+            .addField("Grade", `\`\`\`${this.grade}\`\`\``, true)
+            .addField("Race", `\`\`\`${this.race}\`\`\``, true)
+            .addField("Event", `\`\`\`${this.event}\`\`\``, true)
+            .addField("Affection", `\`\`\`${this.affection}\`\`\``, true)
+            .addField("JP", `\`\`\`${this.jp ? "Yes" : "No"}\`\`\``, true)
+            .addField("ID", `\`\`\`${this.id}\`\`\``, true)
+            .addField("Emoji", `\`\`\`${this.emoji}\`\`\``, true)
+
+        embed.setThumbnail(`attachment://${this.id}.png`)
 
         return embed
     }

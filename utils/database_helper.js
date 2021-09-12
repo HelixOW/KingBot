@@ -27,7 +27,7 @@ async function read_units_from_db() {
 
                     UNIT_LIST.push(new Unit(
                         u_row.unit_id, u_row.name, u_row.simple_name, u_row.type, u_row.grade, u_row.race, u_row.event, u_row.affection,
-                        u_row.id < 0 ? u_row.icon_path : "gc/icons/{}.png", alt_names, u_row.is_jp, u_row.emoji, u_row.banner === null ? null : u_row.banner.split(",")
+                        u_row.id < 0 ? u_row.icon_path : "gc/icons/{}.png", alt_names, u_row.is_jp, u_row.emoji_id, u_row.banner === null ? null : u_row.banner.split(",")
                     ))
                 })
 
