@@ -1,5 +1,8 @@
 const fs = require("fs");
+const axios = require("axios")
+const jimp = require("jimp")
 const {MessageEmbed} = require("discord.js");
+const {IMG_SIZE} = require("./constants");
 
 class Grade {
     static get R() {
@@ -140,6 +143,29 @@ let UNIT_LIST = []
 let R_UNIT_LIST = []
 let SR_UNIT_LIST = []
 
+const FRAMES = {
+    "blue": {
+        "R": jimp.read("gc/frames/blue_r_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+        "SR": jimp.read("gc/frames/blue_sr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+        "SSR": jimp.read("gc/frames/blue_ssr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true))
+    },
+    "red": {
+        "R": jimp.read("gc/frames/red_r_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+        "SR": jimp.read("gc/frames/red_sr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+        "SSR": jimp.read("gc/frames/red_ssr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+    },
+    "green": {
+        "R": jimp.read("gc/frames/green_r_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+        "SR": jimp.read("gc/frames/green_sr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+        "SSR": jimp.read("gc/frames/green_ssr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+    }
+}
+const FRAME_BG = {
+    "R": jimp.read("gc/frames/r_frame_background.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+    "SR": jimp.read("gc/frames/sr_frame_background.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+    "SSR": jimp.read("gc/frames/ssr_frame_background.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+}
+
 function map_attribute(att) {
     att = att.toLowerCase()
     switch (att) {
@@ -270,6 +296,14 @@ function map_affection(aff) {
     }
     return Affection.NONE
 }
+/*
+function compose_icon(attribute, grade, background = null) {
+    bg_frame = FRAME_BG[grade].copy()
+    if(background === null)
+        background = bg_frame
+    else
+        background = background
+}*/
 
 class Unit {
     constructor(id, name, simple_name, type, grade, race, event = Event.BASE_GAME,
@@ -320,6 +354,16 @@ class Unit {
 
         return embed
     }
+
+    async refresh_icon() {
+        if(this.id > 0) return this.icon
+        const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
+        this.icon = Buffer.from(response.data, "utf-8")
+    }
+
+    async set_icon() {
+
+    }
 }
 
 function unit_by_id(id) {
@@ -353,6 +397,8 @@ module.exports = {
     UNIT_LIST: UNIT_LIST,
     R_UNIT_LIST: R_UNIT_LIST,
     SR_UNIT_LIST: SR_UNIT_LIST,
+    FRAMES: FRAMES,
+    FRAME_BG: FRAME_BG,
     Grade: Grade,
     Event: Event,
     Unit: Unit,

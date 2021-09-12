@@ -21,6 +21,13 @@ module.exports = {
             interaction.options.getBoolean("custom") ? UNIT_LIST : UNIT_LIST.filter(u => u.event !== units.Event.CUSTOM))
         let pointer = 0
 
+        if (unit[pointer].id > 0) return
+
+        await unit[0].refresh_icon()
+        await interaction.reply({
+            files: [new MessageAttachment(unit[pointer].icon, `${unit[pointer].id}.png`)]
+        })
+
         if(unit === undefined || unit === null) return
         if(unit[pointer] === undefined || unit[pointer] === null) return
 
