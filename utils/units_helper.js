@@ -3,6 +3,7 @@ const axios = require("axios")
 const jimp = require("jimp")
 const {MessageEmbed} = require("discord.js");
 const {IMG_SIZE} = require("./constants");
+const {loadImage} = require("canvas");
 
 class Grade {
     static get R() {
@@ -322,15 +323,6 @@ class Unit {
         this.emoji = `<:${this.id > 9 ? this.id : "0" + this.id}:${emoji}>`
         this.home_banners = home_banner
         this.alt_names = alt_names
-
-        let icon = null
-
-        if (this.id > 0) {
-            fs.readFile(icon_path.replace("{}", this.id), function (err, data) {
-                icon = data
-            })
-            this.icon = icon
-        }
     }
 
     info_embed() {
@@ -356,9 +348,18 @@ class Unit {
     }
 
     async refresh_icon() {
-        if(this.id > 0) return this.icon
-        const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
-        this.icon = Buffer.from(response.data, "utf-8")
+        if (this.id > 0) {
+            this.icon = new Promise(async promise => await loadImage(this.icon_path).then(img => {
+                img.width = IMG_SIZE
+                img.height = IMG_SIZE
+                promise(img)
+            }))
+        }else {
+            const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
+            this.icon = Buffer.from(response.data, "utf-8")
+        }
+
+        return this.icon
     }
 
     async set_icon() {
@@ -367,7 +368,9 @@ class Unit {
 }
 
 function unit_by_id(id) {
-    return UNIT_LIST.find((u) => u.id == id)
+    return UNIT_LIST.find(u => {
+        return u.id == id
+    })
 }
 
 function units_by_id(id) {

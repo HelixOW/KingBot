@@ -21,6 +21,8 @@ for (const file of commandFiles) {
 client.once('ready', async () => {
     await database_helper.read_affections_from_db()
     await database_helper.read_units_from_db()
+    await database_helper.read_banners_from_db()
+    await
 
     console.log('Ready!')
 })
