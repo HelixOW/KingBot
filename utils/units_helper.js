@@ -1,4 +1,3 @@
-const fs = require("fs");
 const axios = require("axios")
 const jimp = require("jimp")
 const {MessageEmbed} = require("discord.js");
@@ -7,22 +6,22 @@ const {loadImage} = require("canvas");
 
 class Grade {
     static get R() {
-        return "R"
+        return "r"
     }
     static get SR() {
-        return "SR"
+        return "sr"
     }
     static get SSR() {
-        return "SSR"
+        return "ssr"
     }
 
     static to_int(grade) {
         switch (grade) {
-            case "R":
+            case "r":
                 return 2
-            case "SR":
+            case "sr":
                 return 1
-            case "SSR":
+            case "ssr":
                 return 0
         }
     }
@@ -349,17 +348,15 @@ class Unit {
 
     async refresh_icon() {
         if (this.id > 0) {
-            this.icon = new Promise(async promise => await loadImage(this.icon_path).then(img => {
-                img.width = IMG_SIZE
-                img.height = IMG_SIZE
-                promise(img)
-            }))
+            this.icon = await loadImage(this.icon_path)
+            this.icon.width = IMG_SIZE
+            this.icon.height = IMG_SIZE
         }else {
             const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
-            this.icon = Buffer.from(response.data, "utf-8")
+            this.icon = await loadImage(Buffer.from(response.data, "utf-8"))
         }
 
-        return this.icon
+        return new Promise(resolve => resolve(this.icon))
     }
 
     async set_icon() {
@@ -404,6 +401,7 @@ module.exports = {
     FRAME_BG: FRAME_BG,
     Grade: Grade,
     Event: Event,
+    Type: Type,
     Unit: Unit,
     unit_by_id: unit_by_id,
     units_by_id: units_by_id,

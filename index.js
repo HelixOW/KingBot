@@ -2,6 +2,7 @@ const {Client, Collection, Intents} = require('discord.js');
 const {token} = require('./data/config.json');
 const fs = require("fs");
 const database_helper = require('./utils/database_helper.js')
+const {SR_UNIT_LIST} = require("./utils/units_helper");
 
 const client = new Client({intents: [Intents.FLAGS.GUILDS]});
 
@@ -22,7 +23,6 @@ client.once('ready', async () => {
     await database_helper.read_affections_from_db()
     await database_helper.read_units_from_db()
     await database_helper.read_banners_from_db()
-    await
 
     console.log('Ready!')
 })

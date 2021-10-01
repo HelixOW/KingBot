@@ -16,19 +16,19 @@ async function banner_rotation_image(pulled_units) {
     let y = 0
 
     for (const units of pull_rows) {
-        console.log(units.length)
         let x = 0
         for (const ukv of units) {
             await ukv.unit.refresh_icon().then(icon => {
+                console.log(icon)
                 ctx.drawImage(icon, x, y)
-                ctx.fillText(ukv.amount, x+10, y+10)
+                ctx.fillText(ukv.amount, x + 10, y + 10)
             })
             x += IMG_SIZE + 5
         }
         y += IMG_SIZE + 5
     }
 
-    return canvas.toBuffer()
+    return new Promise(resolve => resolve(canvas.toBuffer()))
 }
 
 module.exports = {

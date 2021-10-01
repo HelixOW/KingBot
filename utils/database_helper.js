@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('./data/data.db')
 const unit_helper = require("./units_helper")
-let {Unit, Grade, UNIT_LIST, R_UNIT_LIST, SR_UNIT_LIST, unit_by_id} = unit_helper;
+let {Unit, Grade, Event, UNIT_LIST, R_UNIT_LIST, SR_UNIT_LIST, unit_by_id} = unit_helper;
 const {ALL_BANNER_LIST, Banner} = require("./banners_helper");
 
 
@@ -34,8 +34,8 @@ async function read_units_from_db() {
         )
     })
 
-    R_UNIT_LIST.push([...unit_helper.UNIT_LIST].filter(u => u.grade === Grade.R))
-    SR_UNIT_LIST.push([...unit_helper.UNIT_LIST].filter(u => u.grade === Grade.SR))
+    R_UNIT_LIST.push(...UNIT_LIST.filter(u => u.grade === Grade.R && u.event === Event.BASE_GAME))
+    SR_UNIT_LIST.push(...UNIT_LIST.filter(u => u.grade === Grade.SR && u.event === Event.BASE_GAME))
 }
 
 async function read_affections_from_db() {
@@ -56,10 +56,9 @@ async function read_banners_from_db() {
     ALL_BANNER_LIST.length = 0
 
     await new Promise(resolve => {
-        db.all("SELECT * FROM banners ORDER BY 'order'",
+        db.all("SELECT * FROM banners ORDER BY 'order' DESC",
             async function (err, b_rows) {
                 for (const b_row of b_rows) {
-                    console.log(b_row)
                     let banner_names = []
                     let unit_list = []
                     let rate_up_unit_list = []
@@ -89,7 +88,7 @@ async function read_banners_from_db() {
                     banner_names.push(b_row.name)
 
                     if (unit_list.length === 0)
-                        return
+                        continue
 
                     ALL_BANNER_LIST.push(new Banner(
                         banner_names,
@@ -106,16 +105,12 @@ async function read_banners_from_db() {
                         b_row.banner_type,
                         b_row.loyality
                     ))
-
-                    console.log(ALL_BANNER_LIST)
                 }
 
                 resolve(ALL_BANNER_LIST)
             }
         )
     })
-
-    console.log(ALL_BANNER_LIST)
 }
 
 module.exports = {

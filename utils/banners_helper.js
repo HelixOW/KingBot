@@ -1,4 +1,5 @@
-const {SR_UNIT_LIST, R_UNIT_LIST, Grade, UNIT_LIST, Event} = require("./units_helper")
+const units_helper = require("./units_helper")
+const {Grade, UNIT_LIST, Event} = units_helper
 const {remove_items} = require("./constants");
 const {getRandomArbitrary, getRandomInt} = require("./general_helper");
 
@@ -29,19 +30,21 @@ class Banner {
         this.include_all_sr = include_all_sr
         this.include_all_r = include_all_r
 
-        if (sr_unit_rate !== 0 && include_all_sr) units.concat(SR_UNIT_LIST)
-        if (r_unit_rate !== 0 && include_all_r) units.concat(R_UNIT_LIST)
-
         this.units = units
+
+        if (sr_unit_rate !== 0 && include_all_sr) {
+            this.units.push(...units_helper.SR_UNIT_LIST)
+        }
+        if (r_unit_rate !== 0 && include_all_r) this.units.push(...units_helper.R_UNIT_LIST)
+
         this.rate_up_units = rate_up_units
 
         this.r_units = this.units.filter(u => u.grade === Grade.R)
         this.sr_units = this.units.filter(u => u.grade === Grade.SR)
+
         this.ssr_units = this.units.filter(u => u.grade === Grade.SSR && !this.rate_up_units.includes(u))
         this.all_ssr_units = this.units.filter(u => u.grade === Grade.SSR)
-        this.all_units = this.rate_up_units + this.units
-
-        console.log(this.ssr_units)
+        this.all_units = this.rate_up_units.concat(this.units)
 
         this.ssr_unit_rate = ssr_unit_rate
         this.ssr_unit_rate_up = ssr_unit_rate_up
@@ -81,28 +84,20 @@ class Banner {
     async unit_by_chance() {
         const draw_chance = getRandomArbitrary(0, 100).toFixed(4)
 
-        console.log(draw_chance)
-
         let u
 
         if (this.ssr_rate_up_chance >= draw_chance && this.rate_up_units.length !== 0) {
-            console.log("a1" + getRandomInt(0, this.rate_up_units.length - 1))
-            u = this.rate_up_units[getRandomInt(0, this.rate_up_units.length - 1)]
+            u = this.rate_up_units[getRandomInt(0, this.rate_up_units.length)]
         }
         else if (this.ssr_chance >= draw_chance || this.sr_units.length === 0) {
-            console.log("a2 " + getRandomInt(0, this.ssr_units.length - 1))
-            u = this.ssr_units[getRandomInt(0, this.ssr_units.length - 1)]
+            u = this.ssr_units[getRandomInt(0, this.ssr_units.length)]
         }
         else if (this.sr_chance >= draw_chance || this.r_units.length === 0) {
-            console.log("a3 " + getRandomInt(0, this.sr_units.length - 1))
-            u = this.sr_units[getRandomInt(0, this.sr_units.length - 1)]
+            u = this.sr_units[getRandomInt(0, this.sr_units.length)]
         }
         else {
-            console.log("a4 " + getRandomInt(0, this.r_units.length - 1))
-            u = this.r_units[getRandomInt(0, this.r_units.length - 1)]
+            u = this.r_units[getRandomInt(0, this.r_units.length)]
         }
-
-        console.log(u)
 
         return u
     }
