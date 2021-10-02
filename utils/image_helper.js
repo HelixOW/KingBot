@@ -12,23 +12,26 @@ async function banner_rotation_image(pulled_units) {
         (IMG_SIZE * pull_rows.length) + (draw_offset * (pull_rows.length - 1))
     )
     const ctx = canvas.getContext("2d")
-    ctx.fillStyle = "#000000"
     let y = 0
 
     for (const units of pull_rows) {
         let x = 0
         for (const ukv of units) {
-            await ukv.unit.refresh_icon().then(icon => {
-                console.log(icon)
-                ctx.drawImage(icon, x, y)
-                ctx.fillText(ukv.amount, x + 10, y + 10)
-            })
+            let icon = await ukv.unit.refresh_icon()
+            let ictx = icon.getContext("2d")
+
+            ictx.font = "42px arial"
+            ictx.textAlign = "center"
+            ictx.fillStyle = "#ffffff"
+
+            ictx.fillText(ukv.amount.toString(), ctx.measureText("1").width + 20, 42)
+            ctx.drawImage(icon, x, y, IMG_SIZE, IMG_SIZE)
             x += IMG_SIZE + 5
         }
         y += IMG_SIZE + 5
     }
 
-    return new Promise(resolve => resolve(canvas.toBuffer()))
+    return canvas.toBuffer()
 }
 
 module.exports = {

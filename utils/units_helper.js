@@ -2,7 +2,7 @@ const axios = require("axios")
 const jimp = require("jimp")
 const {MessageEmbed} = require("discord.js");
 const {IMG_SIZE} = require("./constants");
-const {loadImage} = require("canvas");
+const {loadImage, createCanvas} = require("canvas");
 
 class Grade {
     static get R() {
@@ -18,11 +18,11 @@ class Grade {
     static to_int(grade) {
         switch (grade) {
             case "r":
-                return 2
+                return 0
             case "sr":
                 return 1
             case "ssr":
-                return 0
+                return 2
         }
     }
 }
@@ -348,15 +348,31 @@ class Unit {
 
     async refresh_icon() {
         if (this.id > 0) {
+            let canvas = createCanvas(IMG_SIZE, IMG_SIZE)
+            let ctx = canvas.getContext("2d")
             this.icon = await loadImage(this.icon_path)
-            this.icon.width = IMG_SIZE
-            this.icon.height = IMG_SIZE
+
+            ctx.save()
+            ctx.scale(IMG_SIZE / this.icon.width, IMG_SIZE / this.icon.height)
+            ctx.drawImage(this.icon, 0, 0)
+            ctx.restore()
+
+            this.icon = canvas
         }else {
             const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
             this.icon = await loadImage(Buffer.from(response.data, "utf-8"))
+            let canvas = createCanvas(IMG_SIZE, IMG_SIZE)
+            let ctx = canvas.getContext("2d")
+
+            ctx.save()
+            ctx.scale(IMG_SIZE / this.icon.width, IMG_SIZE / this.icon.height)
+            ctx.drawImage(this.icon, 0, 0)
+            ctx.restore()
+
+            this.icon = canvas
         }
 
-        return new Promise(resolve => resolve(this.icon))
+        return this.icon
     }
 
     async set_icon() {
