@@ -1,116 +1,69 @@
-const sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database('./data/data.db')
+const sqlite = require("better-sqlite3")
+const db = sqlite('./data/data.db')
 const unit_helper = require("./units_helper")
 let {Unit, Grade, Event, UNIT_LIST, R_UNIT_LIST, SR_UNIT_LIST, unit_by_id} = unit_helper;
-const {ALL_BANNER_LIST, Banner} = require("./banners_helper");
+const {ALL_BANNER_LIST, Banner, load_banners} = require("./banners_helper");
 
+const unit_info_stmt = db.prepare("SELECT unit_id, name, simple_name, type, grade, race, event, affection, icon_path, is_jp, emoji_id, banner FROM units ORDER BY unit_id")
+const unit_additional_name_stmt = db.prepare("SELECT name FROM additional_unit_names WHERE unit_id=?")
+
+const affection_stmt = db.prepare("SELECT name FROM affections")
+
+const banner_stmt = db.prepare("SELECT * FROM banners ORDER BY 'order' DESC")
+const banner_alt_names_stmt = db.prepare("SELECT alternative_name FROM banner_names WHERE name=?")
+const banner_units_stmt = db.prepare("SELECT unit_id FROM banners_units WHERE banner_name=?")
+const banner_rated_units_stmt = db.prepare("SELECT unit_id FROM banners_rate_up_units WHERE banner_name=?")
 
 async function read_units_from_db() {
     UNIT_LIST.length = 0
     R_UNIT_LIST.length = 0
     SR_UNIT_LIST.length = 0
 
-    await new Promise(resolve => {
-        db.all("SELECT unit_id, name, simple_name, type, grade, race, event, affection, icon_path, is_jp, emoji_id, banner FROM units ORDER BY unit_id",
-            async function (err, u_rows) {
-                for(const u_row of u_rows) {
-                    let alt_names = await new Promise(resolve1 => {
-                        db.all("SELECT name FROM additional_unit_names WHERE unit_id=?", [u_row.unit_id], function (err, rows) {
-                            let a = []
-                            rows.forEach(n => a.push(n.name))
+    for (const unit of unit_info_stmt.all()) {
+        const add_names = unit_additional_name_stmt.all(unit.id).map(data => data.name)
 
-                            resolve1(a)
-                        })
-                    })
-
-                    UNIT_LIST.push(new Unit(
-                        u_row.unit_id, u_row.name, u_row.simple_name, u_row.type, u_row.grade, u_row.race, u_row.event, u_row.affection,
-                        u_row.unit_id < 0 ? u_row.icon_path : "gc/icons/{}.png", alt_names, u_row.is_jp, u_row.emoji_id, u_row.banner === null ? null : u_row.banner.split(",")
-                    ))
-                }
-
-                resolve(UNIT_LIST)
-            }
-        )
-    })
+        UNIT_LIST.push(await new Unit(
+            unit.unit_id, unit.name, unit.simple_name, unit.type, unit.grade, unit.race, unit.event, unit.affection,
+            unit.unit_id < 0 ? unit.icon_path : "gc/icons/{}.png", add_names, unit.is_jp, unit.emoji_id, unit.banner === null ? [] : unit.banner.split(",")
+        ).set_icon())
+    }
 
     R_UNIT_LIST.push(...UNIT_LIST.filter(u => u.grade === Grade.R && u.event === Event.BASE_GAME))
     SR_UNIT_LIST.push(...UNIT_LIST.filter(u => u.grade === Grade.SR && u.event === Event.BASE_GAME))
 }
 
-async function read_affections_from_db() {
-    unit_helper.ALL_AFFECTIONS = await new Promise(resolve => {
-        db.all("SELECT name FROM affections", function (err, rows) {
-            let t = unit_helper.ALL_AFFECTIONS
-
-            rows.forEach((row) => {
-                unit_helper.ALL_AFFECTIONS.push(row.name)
-            })
-
-            resolve(unit_helper.ALL_AFFECTIONS)
-        })
-    })
+function read_affections_from_db() {
+    unit_helper.ALL_AFFECTIONS.push(...affection_stmt.all().map(data => data.name))
 }
 
 async function read_banners_from_db() {
     ALL_BANNER_LIST.length = 0
 
-    await new Promise(resolve => {
-        db.all("SELECT * FROM banners ORDER BY 'order' DESC",
-            async function (err, b_rows) {
-                for (const b_row of b_rows) {
-                    let banner_names = []
-                    let unit_list = []
-                    let rate_up_unit_list = []
+    for(const banner of banner_stmt.all()) {
+        const banner_names = banner_alt_names_stmt.all(banner.name).map(data => data.alternative_name)
+        const banner_units = banner_units_stmt.all(banner.name).map(data => unit_by_id(data.unit_id))
+        const banner_rated_units = banner_rated_units_stmt.all(banner.name).map(data => unit_by_id(data.unit_id))
 
-                    await new Promise(resolve1 => {
-                        db.all("SELECT alternative_name FROM banner_names WHERE name=?", [b_row.name], function (err, rows) {
-                            rows.forEach(n => banner_names.push(n.alternative_name))
+        banner_names.push(banner.name)
 
-                            resolve1(banner_names)
-                        })
-                    })
-                    await new Promise(resolve1 => {
-                        db.all("SELECT unit_id FROM banners_units WHERE banner_name=?", [b_row.name], function (err, rows) {
-                            rows.forEach(n => unit_list.push(unit_by_id(n.unit_id)))
+        ALL_BANNER_LIST.push(new Banner(
+            banner_names,
+            banner.pretty_name,
+            banner_units,
+            banner_rated_units,
+            banner.ssr_unit_rate,
+            banner.ssr_unit_rate_upped,
+            banner.sr_unit_rate,
+            banner.r_unit_rate,
+            banner.bg_url,
+            banner.include_all_sr,
+            banner.include_all_r,
+            banner.banner_type,
+            banner.loyality
+        ))
+    }
 
-                            resolve1(unit_list)
-                        })
-                    })
-                    await new Promise(resolve1 => {
-                        db.all("SELECT unit_id FROM banners_rate_up_units WHERE banner_name=?", [b_row.name], function (err, rows) {
-                            rows.forEach(n => rate_up_unit_list.push(unit_by_id(n.unit_id)))
-
-                            resolve1(rate_up_unit_list)
-                        })
-                    })
-
-                    banner_names.push(b_row.name)
-
-                    if (unit_list.length === 0)
-                        continue
-
-                    ALL_BANNER_LIST.push(new Banner(
-                        banner_names,
-                        b_row.pretty_name,
-                        unit_list,
-                        rate_up_unit_list,
-                        b_row.ssr_unit_rate,
-                        b_row.ssr_unit_rate_upped,
-                        b_row.sr_unit_rate,
-                        b_row.r_unit_rate,
-                        b_row.bg_url,
-                        b_row.include_all_sr,
-                        b_row.include_all_r,
-                        b_row.banner_type,
-                        b_row.loyality
-                    ))
-                }
-
-                resolve(ALL_BANNER_LIST)
-            }
-        )
-    })
+    load_banners()
 }
 
 module.exports = {

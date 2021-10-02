@@ -322,6 +322,8 @@ class Unit {
         this.emoji = `<:${this.id > 9 ? this.id : "0" + this.id}:${emoji}>`
         this.home_banners = home_banner
         this.alt_names = alt_names
+
+        console.log(this.home_banners)
     }
 
     info_embed() {
@@ -347,18 +349,7 @@ class Unit {
     }
 
     async refresh_icon() {
-        if (this.id > 0) {
-            let canvas = createCanvas(IMG_SIZE, IMG_SIZE)
-            let ctx = canvas.getContext("2d")
-            this.icon = await loadImage(this.icon_path)
-
-            ctx.save()
-            ctx.scale(IMG_SIZE / this.icon.width, IMG_SIZE / this.icon.height)
-            ctx.drawImage(this.icon, 0, 0)
-            ctx.restore()
-
-            this.icon = canvas
-        }else {
+        if (this.id < 0) {
             const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
             this.icon = await loadImage(Buffer.from(response.data, "utf-8"))
             let canvas = createCanvas(IMG_SIZE, IMG_SIZE)
@@ -376,7 +367,20 @@ class Unit {
     }
 
     async set_icon() {
+        if (this.id > 0) {
+            let canvas = createCanvas(IMG_SIZE, IMG_SIZE)
+            let ctx = canvas.getContext("2d")
+            this.icon = await loadImage(this.icon_path)
 
+            ctx.save()
+            ctx.scale(IMG_SIZE / this.icon.width, IMG_SIZE / this.icon.height)
+            ctx.drawImage(this.icon, 0, 0)
+            ctx.restore()
+
+            this.icon = canvas
+        }
+
+        return this
     }
 }
 

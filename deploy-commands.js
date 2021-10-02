@@ -1,13 +1,28 @@
-const {REST} = require('@discordjs/rest');
-const {Routes} = require('discord-api-types/v9');
-const {token, clientId} = require('./data/config.json');
-const fs = require("fs");
+const {REST} = require('@discordjs/rest')
+const {Routes} = require('discord-api-types/v9')
+const {token, clientId} = require('./data/config.json')
+const fs = require("fs")
+const path = require("path")
 
+let commandFiles = []
+
+function readCommandsFolderRec(dir) {
+    fs.readdirSync(dir).forEach(file => {
+        const abs = path.join(dir, file);
+        if (fs.statSync(abs).isDirectory()) return readCommandsFolderRec(abs);
+        else return commandFiles.push({
+            "path": dir.replace("\\", "/"), "file": file
+        });
+    });
+}
+
+readCommandsFolderRec("commands")
+
+commandFiles = commandFiles.filter(file => file.file.endsWith('.js'))
 const commands = []
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
+    const command = require("./" + file.path + "/" + file.file);
 
     commands.push(command.data.toJSON())
 }

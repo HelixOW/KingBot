@@ -158,5 +158,6 @@ function load_banners() {
 module.exports = {
     ALL_BANNER_LIST: ALL_BANNER_LIST,
     Banner: Banner,
-    banner_by_name: banner_by_name
+    banner_by_name: banner_by_name,
+    load_banners: load_banners
 }

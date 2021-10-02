@@ -16,7 +16,6 @@ module.exports = {
                 .setDescription("Do you want to include custom units?")),
 
     async execute(interaction) {
-        // interaction.options.getString("unit")
         const unit = units.unit_by_vague_name(interaction.options.getString("unit"),
             interaction.options.getBoolean("custom") ? UNIT_LIST : UNIT_LIST.filter(u => u.event !== units.Event.CUSTOM))
         let pointer = 0
@@ -24,7 +23,7 @@ module.exports = {
         if(unit === undefined || unit === null) return
         if(unit[pointer] === undefined || unit[pointer] === null) return
 
-        await interaction.reply({
+        const msg = await interaction.reply({
             embeds: [unit[pointer].info_embed()],
             components: unit.length > 1 ? [new MessageActionRow().addComponents(
                 new MessageButton()
@@ -40,27 +39,25 @@ module.exports = {
         })
 
         const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
-        const collector = interaction.channel.createMessageComponentCollector({filter})
+        const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
 
         collector.on('collect', async i => {
+            if (!i.isButton()) return
             await i.message.removeAttachments()
+
             if(i.customId === "prev") {
                 pointer -= 1
                 if(pointer < 0) pointer = unit.length - 1
-                if(unit[pointer] === undefined || unit[pointer] === null) return
-                await i.update({
-                    embeds: [unit[pointer].info_embed()],
-                    files: [new MessageAttachment(unit[pointer].icon_path)]
-                })
             } else if(i.customId === "next") {
                 pointer += 1
                 if(pointer === unit.length) pointer = 0
-                if(unit[pointer] === undefined || unit[pointer] === null) return
-                await i.update({
-                    embeds: [unit[pointer].info_embed()],
-                    files: [new MessageAttachment(unit[pointer].icon_path)]
-                })
             }
+
+            if(unit[pointer] === undefined || unit[pointer] === null) return
+            await i.update({
+                embeds: [unit[pointer].info_embed()],
+                files: [new MessageAttachment(unit[pointer].icon_path)]
+            })
         })
     },
 }
