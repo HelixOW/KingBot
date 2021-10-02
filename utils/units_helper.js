@@ -1,8 +1,8 @@
 const axios = require("axios")
-const jimp = require("jimp")
 const {MessageEmbed} = require("discord.js");
 const {IMG_SIZE} = require("./constants");
 const {loadImage, createCanvas} = require("canvas");
+const {resize_image} = require("./general_helper");
 
 class Grade {
     static get R() {
@@ -143,27 +143,33 @@ let UNIT_LIST = []
 let R_UNIT_LIST = []
 let SR_UNIT_LIST = []
 
-const FRAMES = {
-    "blue": {
-        "R": jimp.read("gc/frames/blue_r_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-        "SR": jimp.read("gc/frames/blue_sr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-        "SSR": jimp.read("gc/frames/blue_ssr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true))
-    },
-    "red": {
-        "R": jimp.read("gc/frames/red_r_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-        "SR": jimp.read("gc/frames/red_sr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-        "SSR": jimp.read("gc/frames/red_ssr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-    },
-    "green": {
-        "R": jimp.read("gc/frames/green_r_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-        "SR": jimp.read("gc/frames/green_sr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-        "SSR": jimp.read("gc/frames/green_ssr_frame.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+let FRAMES = {}
+let FRAME_BG = {}
+
+async function load_frames() {
+    FRAMES = {
+        "blue": {
+            "R": resize_image(await loadImage("gc/frames/blue_r_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SR": resize_image(await loadImage("gc/frames/blue_sr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SSR":  resize_image(await loadImage("gc/frames/blue_ssr_frame.png"), IMG_SIZE, IMG_SIZE)
+        },
+        "red": {
+            "R":  resize_image(await loadImage("gc/frames/red_r_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SR":  resize_image(await loadImage("gc/frames/red_sr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SSR":  resize_image(await loadImage("gc/frames/red_ssr_frame.png"), IMG_SIZE, IMG_SIZE),
+        },
+        "green": {
+            "R":  resize_image(await loadImage("gc/frames/green_r_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SR":  resize_image(await loadImage("gc/frames/green_sr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SSR":  resize_image(await loadImage("gc/frames/green_ssr_frame.png"), IMG_SIZE, IMG_SIZE),
+        }
     }
-}
-const FRAME_BG = {
-    "R": jimp.read("gc/frames/r_frame_background.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-    "SR": jimp.read("gc/frames/sr_frame_background.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
-    "SSR": jimp.read("gc/frames/ssr_frame_background.png").then(i => i.resize(IMG_SIZE, IMG_SIZE).rgba(true)),
+
+    FRAME_BG = {
+        "R": resize_image(await loadImage("gc/frames/r_frame_background.png"), IMG_SIZE, IMG_SIZE),
+        "SR": resize_image(await loadImage("gc/frames/sr_frame_background.png"), IMG_SIZE, IMG_SIZE),
+        "SSR": resize_image(await loadImage("gc/frames/ssr_frame_background.png"), IMG_SIZE, IMG_SIZE),
+    }
 }
 
 function map_attribute(att) {
@@ -322,8 +328,6 @@ class Unit {
         this.emoji = `<:${this.id > 9 ? this.id : "0" + this.id}:${emoji}>`
         this.home_banners = home_banner
         this.alt_names = alt_names
-
-        console.log(this.home_banners)
     }
 
     info_embed() {
@@ -351,16 +355,7 @@ class Unit {
     async refresh_icon() {
         if (this.id < 0) {
             const response = await axios.get(this.icon_path, {responseType: 'arraybuffer'})
-            this.icon = await loadImage(Buffer.from(response.data, "utf-8"))
-            let canvas = createCanvas(IMG_SIZE, IMG_SIZE)
-            let ctx = canvas.getContext("2d")
-
-            ctx.save()
-            ctx.scale(IMG_SIZE / this.icon.width, IMG_SIZE / this.icon.height)
-            ctx.drawImage(this.icon, 0, 0)
-            ctx.restore()
-
-            this.icon = canvas
+            this.icon = resize_image(await loadImage(Buffer.from(response.data, "utf-8")), IMG_SIZE, IMG_SIZE)
         }
 
         return this.icon
@@ -412,6 +407,17 @@ function unit_by_vague_name(name, sample_list = UNIT_LIST) {
     })
 }
 
+function longest_named_unit(samples = []) {
+    if(samples.length === 0) samples = UNIT_LIST.slice()
+    samples = samples.slice()
+
+    samples.sort((a, b) => {
+        return a.name.length - b.name.length
+    })
+
+    return samples[0]
+}
+
 module.exports = {
     ALL_AFFECTIONS: ALL_AFFECTIONS,
     UNIT_LIST: UNIT_LIST,
@@ -426,5 +432,7 @@ module.exports = {
     unit_by_id: unit_by_id,
     units_by_id: units_by_id,
     unit_by_name: unit_by_name,
-    unit_by_vague_name: unit_by_vague_name
+    unit_by_vague_name: unit_by_vague_name,
+    longest_named_unit: longest_named_unit,
+    load_frames: load_frames
 }

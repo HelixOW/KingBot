@@ -1,7 +1,9 @@
 const units_helper = require("./units_helper")
 const {Grade, UNIT_LIST, Event} = units_helper
-const {remove_items} = require("./constants");
-const {getRandomArbitrary, getRandomInt} = require("./general_helper");
+const {remove_items, IMG_SIZE} = require("./constants");
+const {getRandomArbitrary, getRandomInt, chunk} = require("./general_helper");
+const {createCanvas} = require("canvas");
+const {longest_named_unit} = require("./units_helper");
 
 class Banner {
     constructor(
@@ -54,16 +56,26 @@ class Banner {
         this.ssr_chance = (this.ssr_unit_rate_up * this.rate_up_units.length) + (this.ssr_unit_rate * this.ssr_units.length)
         this.ssr_rate_up_chance = this.rate_up_units.length !== 0 ? (this.ssr_unit_rate_up * this.rate_up_units) : 0
         this.sr_chance = this.sr_unit_rate * this.sr_units.length
+
+        this.unit_list_image = []
     }
 
-    reload(new_units) {
+    async reload(new_units) {
         this.units = new_units
+
+        if (this.sr_unit_rate !== 0 && this.include_all_sr) {
+            this.units.push(...units_helper.SR_UNIT_LIST)
+        }
+        if (this.r_unit_rate !== 0 && this.include_all_r) this.units.push(...units_helper.R_UNIT_LIST)
 
         this.r_units = this.units.filter(u => u.grade === Grade.R)
         this.sr_units = this.units.filter(u => u.grade === Grade.SR)
+
         this.ssr_units = this.units.filter(u => u.grade === Grade.SSR && !this.rate_up_units.includes(u))
         this.all_ssr_units = this.units.filter(u => u.grade === Grade.SSR)
-        this.all_units = this.rate_up_units + this.units
+        this.all_units = this.rate_up_units.concat(this.units)
+
+        await this.load_unit_list_image()
     }
 
     has_unit(possible_units) {
@@ -101,6 +113,55 @@ class Banner {
 
         return u
     }
+
+    async load_unit_list_image() {
+        if(this.ssr_units.length + this.rate_up_units.length === 0) {
+            this.unit_list_image = [createCanvas(0, 0)]
+            return this
+        }
+
+        const chunked_units = chunk(this.all_units, 5)
+        const banner_unit_list = []
+
+        for(const units of chunked_units) {
+            let c = createCanvas(0, 0)
+            let ctx = c.getContext("2d")
+
+            let canvas = createCanvas(
+                IMG_SIZE + ctx.measureText(longest_named_unit(units) + " - 99.9999%") + 5,
+                (IMG_SIZE * units.length) + (9 * (units.length - 1))
+            )
+            ctx = canvas.getContext("2d")
+
+            let y = 0
+            for(const unit of units) {
+                ctx.drawImage(await unit.refresh_icon(), 0, y)
+
+                ctx.font = "42px arial"
+                ctx.textAlign = "center"
+                ctx.fillStyle = "#000000"
+                ctx.shadowBlur = 10
+                ctx.shadowColor = "#000000"
+
+                let text = unit.name + " - " + this.get_unit_rate(unit)
+
+                ctx.strokeText(text, 5 + IMG_SIZE, y + (IMG_SIZE / 2) - 21)
+                ctx.fillStyle = "#ffffff"
+                ctx.shadowBlur = 0
+                ctx.fillText(text, 5 + IMG_SIZE, y + (IMG_SIZE / 2) - 21)
+
+                y += IMG_SIZE + 5
+            }
+
+            console.log(canvas)
+
+            banner_unit_list.push(canvas)
+        }
+
+        this.unit_list_image = banner_unit_list
+
+        return this
+    }
 }
 
 let ALL_BANNER_LIST = []
@@ -131,7 +192,7 @@ function create_jp_banner() {
     if (ssrs.length < 1) return
 
     ALL_BANNER_LIST.push(
-        Banner(["kr", "jp"],
+        new Banner(["kr", "jp"],
             "JP/KR exclusive draw",
             jp_units,
             [],
@@ -146,13 +207,13 @@ function create_jp_banner() {
     )
 }
 
-function load_banners() {
-    banner_by_name("part 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 1") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
-    banner_by_name("part 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 2") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
-    banner_by_name("part 3").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 3") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
-    banner_by_name("race 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 1")))
-    banner_by_name("race 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 2")))
-    banner_by_name("human").reload(UNIT_LIST.filter(u => u.home_banners.includes("human")))
+async function load_banners() {
+    await banner_by_name("part 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 1") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
+    await banner_by_name("part 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 2") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
+    await banner_by_name("part 3").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 3") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
+    await banner_by_name("race 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 1")))
+    await banner_by_name("race 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 2")))
+    await banner_by_name("humans").reload(UNIT_LIST.filter(u => u.home_banners.includes("human")))
 }
 
 module.exports = {

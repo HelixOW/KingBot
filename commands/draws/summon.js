@@ -3,21 +3,6 @@ const {MessageAttachment, MessageEmbed, MessageActionRow, MessageButton, Message
 const {ALL_BANNER_LIST, banner_by_name} = require("../../utils/banners_helper")
 const {banner_multi_image} = require("../../utils/image_helper");
 
-async function single(interaction, banner) {
-    await interaction.editReply("single")
-}
-
-async function multi(interaction, banner) {
-    console.log("m")
-}
-
-async function whale(interaction, banner) {
-    console.log("w")
-}
-
-async function infos(interaction, banner) {
-    console.log("i")
-}
 
 module.exports = {
     data:  new SlashCommandBuilder()
@@ -90,23 +75,90 @@ module.exports = {
 
             const action = i.values[0]
             const banner = banner_by_name(action.slice(action.indexOf(".") + 1))
-            await i.deferReply()
-            await interaction.deleteReply()
 
-            console.log(banner.unique_name)
+            await interaction.editReply({components: []})
 
             switch (action.slice(0, action.indexOf("."))) {
                 case "single":
-                    await single(i, )
+                    await interaction.editReply({
+                        files: [new MessageAttachment((await (await banner.unit_by_chance()).refresh_icon()).toBuffer(), "unit.png")],
+                        embeds: [new MessageEmbed()
+                            .setTitle(banner.pretty_name + " (1x summon)")
+                            .setColor("#008080")
+                            .setImage("attachment://unit.png")
+                            .setFooter("© Heⅼіх Sama#0578",
+                                "https://cdn.discordapp.com/avatars/456276194581676062/dda3dc4e7a35fbe4afef3488054363cc.webp?size=256")
+                        ],
+                    })
                     break
                 case "multi":
-                    await multi(i)
+                    const multi = []
+                    for(let unit = 0; unit < banner.banner_type; unit++)
+                        multi.push(await banner.unit_by_chance())
+
+                    await interaction.editReply({
+                        files: [new MessageAttachment(await banner_multi_image(multi), "units.png")],
+                        embeds: [new MessageEmbed()
+                            .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon)`)
+                            .setColor("#008080")
+                            .setImage("attachment://units.png")
+                            .setFooter("© Heⅼіх Sama#0578",
+                                "https://cdn.discordapp.com/avatars/456276194581676062/dda3dc4e7a35fbe4afef3488054363cc.webp?size=256")
+                        ]
+                    })
                     break
                 case "whale":
-                    await whale(i)
+                    //TODO: Whale
                     break
                 case "infos":
-                    await infos(i)
+                    await interaction.editReply({
+                        files: [new MessageAttachment(banner.unit_list_image[0].toBuffer(), "units.png")],
+                        embeds: [new MessageEmbed()
+                            .setTitle(`Units in ${banner.pretty_name}  [Page: ${pointer + 1}]`)
+                            .setColor("#008080")
+                            .setImage("attachment://units.png")
+                            .setFooter("© Heⅼіх Sama#0578",
+                                "https://cdn.discordapp.com/avatars/456276194581676062/dda3dc4e7a35fbe4afef3488054363cc.webp?size=256")
+                        ],
+                        components: [
+                            new MessageActionRow().addComponents(
+                                new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
+                                new MessageButton().setCustomId("next").setStyle("PRIMARY").setEmoji("➡️")
+                            )
+                        ]
+                    })
+
+                    let pointer = 0
+                    const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
+                    const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
+
+                    collector.on("collect", async i => {
+                        if (!i.isButton()) return
+                        switch (i.customId) {
+                            case "prev":
+                                pointer -= 1
+                                if (pointer < 0) pointer = banner.unit_list_image.length - 1
+                                break
+                            case "next":
+                                pointer += 1
+                                if (pointer === banner.unit_list_image.length) pointer = 0
+                                break
+                        }
+
+                        await i.message.removeAttachments()
+                        await i.deferUpdate()
+                        await i.editReply({
+                            embeds: [new MessageEmbed()
+                                .setTitle(`Units in ${banner.pretty_name} [Page: ${pointer + 1}]`)
+                                .setColor("#008080")
+                                .setImage("attachment://units.png")
+                                .setFooter("© Heⅼіх Sama#0578",
+                                    "https://cdn.discordapp.com/avatars/456276194581676062/dda3dc4e7a35fbe4afef3488054363cc.webp?size=256")
+                            ],
+                            files: [new MessageAttachment(banner.unit_list_image[pointer].toBuffer(), "units.png")]
+                        })
+                    })
+
                     break
             }
         })
@@ -123,8 +175,6 @@ module.exports = {
                     if (pointer === ALL_BANNER_LIST.length) pointer = 0
                     break
             }
-
-            console.log(ALL_BANNER_LIST[pointer].pretty_name)
 
             await i.deferUpdate()
             await i.editReply({

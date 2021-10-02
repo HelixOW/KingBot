@@ -3,13 +3,14 @@ const db = sqlite('./data/data.db')
 const unit_helper = require("./units_helper")
 let {Unit, Grade, Event, UNIT_LIST, R_UNIT_LIST, SR_UNIT_LIST, unit_by_id} = unit_helper;
 const {ALL_BANNER_LIST, Banner, load_banners} = require("./banners_helper");
+const {load_frames} = require("./units_helper");
 
 const unit_info_stmt = db.prepare("SELECT unit_id, name, simple_name, type, grade, race, event, affection, icon_path, is_jp, emoji_id, banner FROM units ORDER BY unit_id")
 const unit_additional_name_stmt = db.prepare("SELECT name FROM additional_unit_names WHERE unit_id=?")
 
 const affection_stmt = db.prepare("SELECT name FROM affections")
 
-const banner_stmt = db.prepare("SELECT * FROM banners ORDER BY 'order' DESC")
+const banner_stmt = db.prepare("SELECT * FROM banners ORDER BY display_order")
 const banner_alt_names_stmt = db.prepare("SELECT alternative_name FROM banner_names WHERE name=?")
 const banner_units_stmt = db.prepare("SELECT unit_id FROM banners_units WHERE banner_name=?")
 const banner_rated_units_stmt = db.prepare("SELECT unit_id FROM banners_rate_up_units WHERE banner_name=?")
@@ -30,6 +31,8 @@ async function read_units_from_db() {
 
     R_UNIT_LIST.push(...UNIT_LIST.filter(u => u.grade === Grade.R && u.event === Event.BASE_GAME))
     SR_UNIT_LIST.push(...UNIT_LIST.filter(u => u.grade === Grade.SR && u.event === Event.BASE_GAME))
+
+    await load_frames()
 }
 
 function read_affections_from_db() {
@@ -46,7 +49,7 @@ async function read_banners_from_db() {
 
         banner_names.push(banner.name)
 
-        ALL_BANNER_LIST.push(new Banner(
+        ALL_BANNER_LIST.push(await new Banner(
             banner_names,
             banner.pretty_name,
             banner_units,
@@ -60,10 +63,10 @@ async function read_banners_from_db() {
             banner.include_all_r,
             banner.banner_type,
             banner.loyality
-        ))
+        ).load_unit_list_image())
     }
 
-    load_banners()
+    await load_banners()
 }
 
 module.exports = {
