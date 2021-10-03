@@ -115,8 +115,8 @@ class Banner {
     }
 
     async load_unit_list_image() {
-        if(this.ssr_units.length + this.rate_up_units.length === 0) {
-            this.unit_list_image = [createCanvas(0, 0)]
+        if(this.all_ssr_units.length === 0) {
+            this.unit_list_image = [createCanvas(IMG_SIZE, IMG_SIZE)]
             return this
         }
 
@@ -124,13 +124,12 @@ class Banner {
         const banner_unit_list = []
 
         for(const units of chunked_units) {
-            let c = createCanvas(0, 0)
-            let ctx = c.getContext("2d")
+            let canvas = createCanvas(0, 0)
+            let ctx = canvas.getContext("2d")
 
-            let canvas = createCanvas(
-                IMG_SIZE + ctx.measureText(longest_named_unit(units) + " - 99.9999%") + 5,
-                (IMG_SIZE * units.length) + (9 * (units.length - 1))
-            )
+            canvas.width = IMG_SIZE + ctx.measureText(longest_named_unit(units).name + " - 99.9999%").width + 5
+            canvas.height = (IMG_SIZE * units.length) + (9 * (units.length - 1))
+
             ctx = canvas.getContext("2d")
 
             let y = 0
@@ -145,15 +144,13 @@ class Banner {
 
                 let text = unit.name + " - " + this.get_unit_rate(unit)
 
-                ctx.strokeText(text, 5 + IMG_SIZE, y + (IMG_SIZE / 2) - 21)
-                ctx.fillStyle = "#ffffff"
+                ctx.strokeText(text, ctx.measureText(text).width + 5 + IMG_SIZE, y + (IMG_SIZE / 2) - 21)
+                ctx.fillStyle = "#000000"
                 ctx.shadowBlur = 0
-                ctx.fillText(text, 5 + IMG_SIZE, y + (IMG_SIZE / 2) - 21)
+                ctx.fillText(text, ctx.measureText(text).width + 5 + IMG_SIZE, y + (IMG_SIZE / 2) - 21)
 
                 y += IMG_SIZE + 5
             }
-
-            console.log(canvas)
 
             banner_unit_list.push(canvas)
         }

@@ -49,6 +49,8 @@ async function read_banners_from_db() {
 
         banner_names.push(banner.name)
 
+        console.log(banner.name + " " + banner_units_stmt.all("banner 1"))
+
         ALL_BANNER_LIST.push(await new Banner(
             banner_names,
             banner.pretty_name,

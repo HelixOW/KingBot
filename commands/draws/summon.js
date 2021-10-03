@@ -111,10 +111,11 @@ module.exports = {
                     //TODO: Whale
                     break
                 case "infos":
+                    console.log(banner.unit_list_image)
                     await interaction.editReply({
                         files: [new MessageAttachment(banner.unit_list_image[0].toBuffer(), "units.png")],
                         embeds: [new MessageEmbed()
-                            .setTitle(`Units in ${banner.pretty_name}  [Page: ${pointer + 1}]`)
+                            .setTitle(`Units in ${banner.pretty_name}  [Page: 1]`)
                             .setColor("#008080")
                             .setImage("attachment://units.png")
                             .setFooter("© Heⅼіх Sama#0578",
@@ -134,6 +135,7 @@ module.exports = {
 
                     collector.on("collect", async i => {
                         if (!i.isButton()) return
+
                         switch (i.customId) {
                             case "prev":
                                 pointer -= 1
