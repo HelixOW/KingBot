@@ -149,26 +149,26 @@ let FRAME_BG = {}
 async function load_frames() {
     FRAMES = {
         "blue": {
-            "R": resize_image(await loadImage("gc/frames/blue_r_frame.png"), IMG_SIZE, IMG_SIZE),
-            "SR": resize_image(await loadImage("gc/frames/blue_sr_frame.png"), IMG_SIZE, IMG_SIZE),
-            "SSR":  resize_image(await loadImage("gc/frames/blue_ssr_frame.png"), IMG_SIZE, IMG_SIZE)
+            "R": resize_image(await loadImage("data/gc/frames/blue_r_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SR": resize_image(await loadImage("data/gc/frames/blue_sr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SSR":  resize_image(await loadImage("data/gc/frames/blue_ssr_frame.png"), IMG_SIZE, IMG_SIZE)
         },
         "red": {
-            "R":  resize_image(await loadImage("gc/frames/red_r_frame.png"), IMG_SIZE, IMG_SIZE),
-            "SR":  resize_image(await loadImage("gc/frames/red_sr_frame.png"), IMG_SIZE, IMG_SIZE),
-            "SSR":  resize_image(await loadImage("gc/frames/red_ssr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "R":  resize_image(await loadImage("data/gc/frames/red_r_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SR":  resize_image(await loadImage("data/gc/frames/red_sr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SSR":  resize_image(await loadImage("data/gc/frames/red_ssr_frame.png"), IMG_SIZE, IMG_SIZE),
         },
         "green": {
-            "R":  resize_image(await loadImage("gc/frames/green_r_frame.png"), IMG_SIZE, IMG_SIZE),
-            "SR":  resize_image(await loadImage("gc/frames/green_sr_frame.png"), IMG_SIZE, IMG_SIZE),
-            "SSR":  resize_image(await loadImage("gc/frames/green_ssr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "R":  resize_image(await loadImage("data/gc/frames/green_r_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SR":  resize_image(await loadImage("data/gc/frames/green_sr_frame.png"), IMG_SIZE, IMG_SIZE),
+            "SSR":  resize_image(await loadImage("data/gc/frames/green_ssr_frame.png"), IMG_SIZE, IMG_SIZE),
         }
     }
 
     FRAME_BG = {
-        "R": resize_image(await loadImage("gc/frames/r_frame_background.png"), IMG_SIZE, IMG_SIZE),
-        "SR": resize_image(await loadImage("gc/frames/sr_frame_background.png"), IMG_SIZE, IMG_SIZE),
-        "SSR": resize_image(await loadImage("gc/frames/ssr_frame_background.png"), IMG_SIZE, IMG_SIZE),
+        "R": resize_image(await loadImage("data/gc/frames/r_frame_background.png"), IMG_SIZE, IMG_SIZE),
+        "SR": resize_image(await loadImage("data/gc/frames/sr_frame_background.png"), IMG_SIZE, IMG_SIZE),
+        "SSR": resize_image(await loadImage("data/gc/frames/ssr_frame_background.png"), IMG_SIZE, IMG_SIZE),
     }
 }
 

@@ -26,7 +26,12 @@
     "canvas": "^2.8.0",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
+    "jest": "^27.4.3",
     "node-canvas-text": "^1.0.2",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "typescript": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.3"
   }
 }

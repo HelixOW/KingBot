@@ -25,7 +25,7 @@ class Banner {
         this.names = name
         this.pretty_name = pretty_name
         this.banner_type = banner_type
-        this.background = bg_url
+        this.background = "./data/gc/banners/" + bg_url
         this.shaftable = this.names.filter(n => n.includes("gssr")).length === 0
         this.loyalty = loyalty
 
@@ -74,6 +74,9 @@ class Banner {
         this.ssr_units = this.units.filter(u => u.grade === Grade.SSR && !this.rate_up_units.includes(u))
         this.all_ssr_units = this.units.filter(u => u.grade === Grade.SSR)
         this.all_units = this.rate_up_units.concat(this.units)
+
+        this.ssr_chance = (this.ssr_unit_rate_up * this.rate_up_units.length) + (this.ssr_unit_rate * this.ssr_units.length)
+        this.sr_chance = this.sr_unit_rate * this.sr_units.length
 
         await this.load_unit_list_image()
     }
@@ -205,12 +208,11 @@ function create_jp_banner() {
 }
 
 async function load_banners() {
-    await banner_by_name("part 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 1") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
-    await banner_by_name("part 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 2") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
-    await banner_by_name("part 3").reload(UNIT_LIST.filter(u => u.home_banners.includes("part 3") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
+    await banner_by_name("general").reload(UNIT_LIST.filter(u => u.home_banners.includes("general") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
     await banner_by_name("race 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 1")))
     await banner_by_name("race 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 2")))
     await banner_by_name("humans").reload(UNIT_LIST.filter(u => u.home_banners.includes("human")))
+    await banner_by_name("gssr").reload(UNIT_LIST.filter(u => u.home_banners.includes("general") || (u.grade === Grade.SSR && u.event === Event.BASE_GAME)))
 }
 
 module.exports = {

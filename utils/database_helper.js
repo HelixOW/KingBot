@@ -10,7 +10,7 @@ const unit_additional_name_stmt = db.prepare("SELECT name FROM additional_unit_n
 
 const affection_stmt = db.prepare("SELECT name FROM affections")
 
-const banner_stmt = db.prepare("SELECT * FROM banners ORDER BY display_order")
+const banner_stmt = db.prepare("SELECT * FROM banners ORDER BY 'order'")
 const banner_alt_names_stmt = db.prepare("SELECT alternative_name FROM banner_names WHERE name=?")
 const banner_units_stmt = db.prepare("SELECT unit_id FROM banners_units WHERE banner_name=?")
 const banner_rated_units_stmt = db.prepare("SELECT unit_id FROM banners_rate_up_units WHERE banner_name=?")
@@ -25,7 +25,7 @@ async function read_units_from_db() {
 
         UNIT_LIST.push(await new Unit(
             unit.unit_id, unit.name, unit.simple_name, unit.type, unit.grade, unit.race, unit.event, unit.affection,
-            unit.unit_id < 0 ? unit.icon_path : "gc/icons/{}.png", add_names, unit.is_jp, unit.emoji_id, unit.banner === null ? [] : unit.banner.split(",")
+            unit.unit_id < 0 ? unit.icon_path : "data/gc/icons/{}.png", add_names, unit.is_jp, unit.emoji_id, unit.banner === null ? [] : unit.banner.replace("part 1", "general").replace("part 2", "general").replace("part 3", "general").split(",")
         ).set_icon())
     }
 
@@ -48,8 +48,6 @@ async function read_banners_from_db() {
         const banner_rated_units = banner_rated_units_stmt.all(banner.name).map(data => unit_by_id(data.unit_id))
 
         banner_names.push(banner.name)
-
-        console.log(banner.name + " " + banner_units_stmt.all("banner 1"))
 
         ALL_BANNER_LIST.push(await new Banner(
             banner_names,
