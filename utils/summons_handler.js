@@ -14,7 +14,7 @@ module.exports = {
         })
     },
 
-    multi: async (interaction, banner, rotation = false, amount = 1, person = interaction.member) => {
+    multi: async (interaction, banner, rotation = false, amount = 1, person = interaction.member, ref = true) => {
         if(rotation) {
             const units = []
             for(let i = 0; i < (banner.loyalty / 30) * 11; i++) {
@@ -29,10 +29,8 @@ module.exports = {
             if(units.length > 0)
                 units.sort((a, b) => Grade.to_int(b.unit.grade) - Grade.to_int(a.unit.grade))
 
-            let img = await banner_rotation_image(units)
-
             return await interaction.editReply({
-                files: [new MessageAttachment(img, "units.png")],
+                files: [new MessageAttachment(await banner_rotation_image(units), "units.png")],
                 content: (person === interaction.member ? " " : `Rotation for ${person}`),
                 embeds: [new DefaultEmbed()
                     .setTitle(`1 Rotation on ${banner.pretty_name} (${banner.loyalty} Gems)`)
@@ -50,9 +48,11 @@ module.exports = {
             units.push(multi)
         }
 
+        if(ref) await interaction.deferReply()
+
         let msg = await interaction.editReply({
             content: (person === interaction.member ? " " : `Multi for ${person}`),
-            files: [new MessageAttachment(await banner_multi_image(units[0]), "units.png")],
+            files: [new MessageAttachment(await banner_multi_image(units[0], banner.banner_type === 5), "units.png")],
             embeds: [new DefaultEmbed()
                 .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon)`)
                 .setImage("attachment://units.png")
@@ -91,7 +91,7 @@ module.exports = {
             if(units[pointer] === undefined || units[pointer] === null || units[pointer].length === 0) return
             await i.deferUpdate()
             await i.editReply({
-                files: [new MessageAttachment(await banner_multi_image(units[pointer]), "units.png")],
+                files: [new MessageAttachment(await banner_multi_image(units[pointer], banner.banner_type === 5), "units.png")],
                 embeds: [new DefaultEmbed()
                     .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon) [${pointer + 1}.]`)
                     .setImage("attachment://units.png")

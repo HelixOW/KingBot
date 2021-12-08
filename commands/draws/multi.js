@@ -27,7 +27,7 @@ module.exports = {
             person = interaction.options.getUser("for")
 
         if(interaction.options.getString("banner") === null)
-            banner = banner_by_name("banner 1")
+            banner = banner_by_name("general")
         else {
             banner = banner_by_name(interaction.options.getString("banner"))
 
@@ -35,7 +35,7 @@ module.exports = {
                 return interaction.reply({content: `Can't find the \`${interaction.options.getString("banner")}\` banner.`})
         }
 
-        if(amount === undefined)
+        if(amount === null)
             amount = 1
 
         if(person === undefined || person === null)
@@ -44,6 +44,6 @@ module.exports = {
         if(amount < 0)
             return multi(interaction, banner, true)
 
-        return multi(interaction, banner, false, amount)
+        return multi(interaction, banner, false, amount, person)
     },
 }

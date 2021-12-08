@@ -19,7 +19,8 @@ class Banner {
         include_all_sr = true,
         include_all_r = true,
         banner_type = 11,
-        loyalty = 900
+        loyalty = 900,
+        order
     ) {
         this.unique_name = name[0]
         this.names = name
@@ -28,6 +29,7 @@ class Banner {
         this.background = "./data/gc/banners/" + bg_url
         this.shaftable = this.names.filter(n => n.includes("gssr")).length === 0
         this.loyalty = loyalty
+        this.order = order
 
         this.include_all_sr = include_all_sr
         this.include_all_r = include_all_r
@@ -213,6 +215,8 @@ async function load_banners() {
     await banner_by_name("race 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 2")))
     await banner_by_name("humans").reload(UNIT_LIST.filter(u => u.home_banners.includes("human")))
     await banner_by_name("gssr").reload(UNIT_LIST.filter(u => u.home_banners.includes("general") || (u.grade === Grade.SSR && u.event === Event.BASE_GAME)))
+
+    ALL_BANNER_LIST = ALL_BANNER_LIST.sort((a, b) => a.order - b.order)
 }
 
 module.exports = {

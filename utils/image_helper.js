@@ -40,7 +40,7 @@ async function banner_rotation_image(pulled_units) {
 }
 
 async function banner_multi_image(pulled_units, fiveSummon = false) {
-    const pull_rows = chunk(pulled_units, fiveSummon ? 3 : 4)
+    const pull_rows = chunk(pulled_units, (fiveSummon ? 3 : 4))
     const canvas = createCanvas(
         (IMG_SIZE * (fiveSummon ? 3 : 4)) + (draw_offset * (fiveSummon ? 2 : 3)),
         (IMG_SIZE * pull_rows.length) + (draw_offset * (pull_rows.length - 1))

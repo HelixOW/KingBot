@@ -13,6 +13,33 @@ function imageToCanvas(img) {
     return canvas.toBuffer()
 }
 
+function registerOptions(banner) {
+    if(banner.shaftable)
+        return [
+            {label: "Single", description: "Do a single on " + banner.pretty_name,
+                value: "single." + banner.unique_name},
+            {label: "Multi", description: "Do a multi on " + banner.pretty_name,
+                value: "multi." + banner.unique_name},
+            {label: "Rotation", description: "Do a rotation on " + banner.pretty_name,
+                value: "rotation." + banner.unique_name},
+            {label: "Whale", description: "Consecutive Multis until a SSR is drafted",
+                value: "whale." + banner.unique_name},
+            {label: "Units", description: "Show all Units on " + banner.pretty_name,
+                value: "infos." + banner.unique_name}
+        ]
+    else
+        return [
+            {label: "Single", description: "Do a single on " + banner.pretty_name,
+                value: "single." + banner.unique_name},
+            {label: "Multi", description: "Do a multi on " + banner.pretty_name,
+                value: "multi." + banner.unique_name},
+            {label: "Rotation", description: "Do a rotation on " + banner.pretty_name,
+                value: "rotation." + banner.unique_name},
+            {label: "Units", description: "Show all Units on " + banner.pretty_name,
+                value: "infos." + banner.unique_name}
+        ]
+}
+
 module.exports = {
     data:  new SlashCommandBuilder()
         .setName("summon")
@@ -31,18 +58,7 @@ module.exports = {
                     new MessageSelectMenu()
                         .setCustomId("action")
                         .setPlaceholder("Nothing Selected")
-                        .addOptions([
-                            {label: "Single", description: "Do a single on " + ALL_BANNER_LIST[0].pretty_name,
-                                value: "single." + ALL_BANNER_LIST[0].unique_name},
-                            {label: "Multi", description: "Do a multi on " + ALL_BANNER_LIST[0].pretty_name,
-                                value: "multi." + ALL_BANNER_LIST[0].unique_name},
-                            {label: "Rotation", description: "Do a rotation on " + ALL_BANNER_LIST[0].pretty_name,
-                                value: "rotation." + ALL_BANNER_LIST[0].unique_name},
-                            {label: "Whale", description: "Consecutive Multis until a SSR is drafted",
-                                value: "whale." + ALL_BANNER_LIST[0].unique_name},
-                            {label: "Units", description: "Show all Units on " + ALL_BANNER_LIST[0].pretty_name,
-                                value: "infos." + ALL_BANNER_LIST[0].unique_name}
-                        ])
+                        .addOptions(registerOptions(ALL_BANNER_LIST[0]))
                 ),
                 new MessageActionRow().addComponents(
                     new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
@@ -72,13 +88,13 @@ module.exports = {
                     await single(interaction, banner)
                     break
                 case "multi":
-                    await multi(interaction, banner)
+                    await multi(interaction, banner, undefined, undefined, undefined, false)
                     break
                 case "whale":
                     await whale(interaction, banner)
                     break
                 case "rotation":
-                    await multi(interaction, banner, true)
+                    await multi(interaction, banner, true, undefined, undefined, false)
                     break
                 case "infos":
                     state = "infos"
@@ -111,37 +127,11 @@ module.exports = {
                 ],
                 files: [new MessageAttachment(imageToCanvas(await loadImage(ALL_BANNER_LIST[pointer].background)), "b.jpg")],
                 components: [
-                    ALL_BANNER_LIST[pointer].shaftable ? new MessageActionRow().addComponents(
-                        new MessageSelectMenu()
-                            .setCustomId("action")
-                            .setPlaceholder("Nothing Selected")
-                            .addOptions([
-                                {label: "Single", description: "Do a single on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "single." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Multi", description: "Do a multi on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "multi." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Rotation", description: "Do a rotation on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "rotation." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Whale", description: "Consecutive Multis until a SSR is drafted",
-                                    value: "whale." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Units", description: "Show all Units on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "infos." + ALL_BANNER_LIST[pointer].unique_name}
-                            ])
-                    ) : 
                     new MessageActionRow().addComponents(
                         new MessageSelectMenu()
                             .setCustomId("action")
                             .setPlaceholder("Nothing Selected")
-                            .addOptions([
-                                {label: "Single", description: "Do a single on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "single." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Multi", description: "Do a multi on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "multi." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Rotation", description: "Do a rotation on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "rotation." + ALL_BANNER_LIST[pointer].unique_name},
-                                {label: "Units", description: "Show all Units on " + ALL_BANNER_LIST[pointer].pretty_name,
-                                    value: "infos." + ALL_BANNER_LIST[pointer].unique_name}
-                            ])
+                            .addOptions(registerOptions(ALL_BANNER_LIST[pointer]))
                     ),
                     new MessageActionRow().addComponents(
                         new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),

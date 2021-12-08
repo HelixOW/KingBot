@@ -62,9 +62,12 @@ async function read_banners_from_db() {
             banner.include_all_sr,
             banner.include_all_r,
             banner.banner_type,
-            banner.loyality
+            banner.loyality,
+            banner.order
         ).load_unit_list_image())
     }
+
+    ALL_BANNER_LIST.sort((a, b) => a.order - b.order)
 
     await load_banners()
 }
