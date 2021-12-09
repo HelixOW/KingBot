@@ -4,22 +4,22 @@ const {banner_rotation_image, banner_multi_image} = require("../../utils/image_h
 const {MessageAttachment, MessageEmbed, MessageActionRow, MessageButton} = require("discord.js");
 const units_helper = require("../../utils/units_helper");
 const { DefaultEmbed } = require("../../utils/embeds");
-const { multi } = require("../../utils/summons_handler");
+const { multi, single } = require("../../utils/summons_handler");
 const {Grade} = units_helper
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("multi")
-        .setDescription("Do a multi on any current banner.")
+        .setName("single")
+        .setDescription("Do a single on any current banner.")
         .addStringOption(option =>
             option.setName('banner')
                 .setDescription("Which banner do you want to pull from?"))
         .addMentionableOption(option =>
             option.setName("for")
-                .setDescription("Who do you want to do a multi for?"))
+                .setDescription("Who do you want to do a single for?"))
         .addIntegerOption(option =>
             option.setName("amount")
-                .setDescription("How many multis do you want to do?")),
+                .setDescription("How many singles do you want to do?")),
 
     async execute(interaction) {
         let banner,
@@ -42,8 +42,8 @@ module.exports = {
             person = interaction.member
 
         if(amount < 0)
-            return multi(interaction, banner, true)
+            return single(interaction, banner, 1, person)
 
-        return multi(interaction, banner, false, amount, person)
+        return single(interaction, banner, amount, person)
     },
 }

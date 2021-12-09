@@ -1,17 +1,9 @@
 const {SlashCommandBuilder} = require("@discordjs/builders")
-const { loadImage, createCanvas } = require("canvas")
+const { loadImage } = require("canvas")
 const {MessageActionRow, MessageButton, MessageSelectMenu, MessageAttachment} = require("discord.js")
 const {ALL_BANNER_LIST, banner_by_name} = require("../../utils/banners_helper")
 const {DefaultEmbed} = require("../../utils/embeds")
 const {single, multi, infos, whale} = require("../../utils/summons_handler")
-
-function imageToCanvas(img) {
-    const canvas = createCanvas(img.width, img.height)
-    const ctx = canvas.getContext('2d')
-
-    ctx.drawImage(img, 0, 0)
-    return canvas.toBuffer()
-}
 
 function registerOptions(banner) {
     if(banner.shaftable)
@@ -50,9 +42,8 @@ module.exports = {
         const msg = await interaction.editReply({
             embeds: [new DefaultEmbed()
                 .setTitle(ALL_BANNER_LIST[0].pretty_name)
-                .setImage("attachment://b.jpg")
+                .setImage(ALL_BANNER_LIST[0].background)
             ],
-            files: [new MessageAttachment(imageToCanvas(await loadImage(ALL_BANNER_LIST[0].background)), "b.jpg")],
             components: [
                 new MessageActionRow().addComponents(
                     new MessageSelectMenu()
@@ -85,20 +76,20 @@ module.exports = {
 
             switch (action.slice(0, action.indexOf("."))) {
                 case "single":
-                    await single(interaction, banner)
+                    await single(interaction, banner, undefined, undefined, false)
                     break
                 case "multi":
                     await multi(interaction, banner, undefined, undefined, undefined, false)
                     break
                 case "whale":
-                    await whale(interaction, banner)
+                    await whale(interaction, banner, undefined, false)
                     break
                 case "rotation":
                     await multi(interaction, banner, true, undefined, undefined, false)
                     break
                 case "infos":
                     state = "infos"
-                    await infos(interaction, banner, msg)
+                    await infos(interaction, banner, msg, false)
                     break
             }
         })
@@ -123,9 +114,8 @@ module.exports = {
             await i.editReply({
                 embeds: [new DefaultEmbed()
                     .setTitle(ALL_BANNER_LIST[pointer].pretty_name)
-                    .setImage("attachment://b.jpg")
+                    .setImage(ALL_BANNER_LIST[pointer].background)
                 ],
-                files: [new MessageAttachment(imageToCanvas(await loadImage(ALL_BANNER_LIST[pointer].background)), "b.jpg")],
                 components: [
                     new MessageActionRow().addComponents(
                         new MessageSelectMenu()

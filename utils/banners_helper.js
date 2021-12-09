@@ -2,8 +2,9 @@ const units_helper = require("./units_helper")
 const {Grade, UNIT_LIST, Event} = units_helper
 const {remove_items, IMG_SIZE} = require("./constants");
 const {getRandomArbitrary, getRandomInt, chunk} = require("./general_helper");
-const {createCanvas} = require("canvas");
+const {createCanvas, loadImage} = require("canvas");
 const {longest_named_unit} = require("./units_helper");
+const { imageToCanvas } = require('./image_helper')
 
 class Banner {
     constructor(
@@ -26,7 +27,7 @@ class Banner {
         this.names = name
         this.pretty_name = pretty_name
         this.banner_type = banner_type
-        this.background = "./data/gc/banners/" + bg_url
+        this.background = bg_url
         this.shaftable = this.names.filter(n => n.includes("gssr")).length === 0
         this.loyalty = loyalty
         this.order = order
@@ -36,10 +37,10 @@ class Banner {
 
         this.units = units
 
-        if (sr_unit_rate !== 0 && include_all_sr) {
+        if (sr_unit_rate !== 0 && include_all_sr)
             this.units.push(...units_helper.SR_UNIT_LIST)
-        }
-        if (r_unit_rate !== 0 && include_all_r) this.units.push(...units_helper.R_UNIT_LIST)
+        if (r_unit_rate !== 0 && include_all_r) 
+            this.units.push(...units_helper.R_UNIT_LIST)
 
         this.rate_up_units = rate_up_units
 
@@ -65,11 +66,6 @@ class Banner {
     async reload(new_units) {
         this.units = new_units
 
-        if (this.sr_unit_rate !== 0 && this.include_all_sr) {
-            this.units.push(...units_helper.SR_UNIT_LIST)
-        }
-        if (this.r_unit_rate !== 0 && this.include_all_r) this.units.push(...units_helper.R_UNIT_LIST)
-
         this.r_units = this.units.filter(u => u.grade === Grade.R)
         this.sr_units = this.units.filter(u => u.grade === Grade.SR)
 
@@ -83,7 +79,7 @@ class Banner {
         await this.load_unit_list_image()
     }
 
-    has_unit(possible_units) {
+    hasUnit(possible_units) {
         return this.all_units.map(u => u.id).some(r => possible_units.map(u => u.id).includes(r))
     }
 
@@ -214,7 +210,7 @@ async function load_banners() {
     await banner_by_name("race 1").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 1")))
     await banner_by_name("race 2").reload(UNIT_LIST.filter(u => u.home_banners.includes("race 2")))
     await banner_by_name("humans").reload(UNIT_LIST.filter(u => u.home_banners.includes("human")))
-    await banner_by_name("gssr").reload(UNIT_LIST.filter(u => u.home_banners.includes("general") || (u.grade === Grade.SSR && u.event === Event.BASE_GAME)))
+    await banner_by_name("gssr").reload(UNIT_LIST.filter(u => u.home_banners.includes("general") && u.grade === Grade.SSR && u.event === Event.BASE_GAME))
 
     ALL_BANNER_LIST = ALL_BANNER_LIST.sort((a, b) => a.order - b.order)
 }
@@ -223,5 +219,7 @@ module.exports = {
     ALL_BANNER_LIST: ALL_BANNER_LIST,
     Banner: Banner,
     banner_by_name: banner_by_name,
-    load_banners: load_banners
+    load_banners: load_banners,
+    find_banner_containing_unit: find_banner_containing_unit,
+    find_banner_containing_any_unit: find_banner_containing_any_unit
 }

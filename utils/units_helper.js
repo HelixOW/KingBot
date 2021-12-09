@@ -15,7 +15,7 @@ class Grade {
         return "ssr"
     }
 
-    static to_int(grade) {
+    static toInt(grade) {
         switch (grade) {
             case "r":
                 return 0
@@ -36,6 +36,17 @@ class Type {
     }
     static get BLUE() {
         return "blue"
+    }
+
+    static toInt(type) {
+        switch (type) {
+            case "red":
+                return 0
+            case "green":
+                return 1
+            case "blue":
+                return 2
+        }
     }
 
     static to_discord_color(color) {
