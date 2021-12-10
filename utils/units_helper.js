@@ -1,8 +1,8 @@
 const axios = require("axios")
-const {MessageEmbed} = require("discord.js");
-const {IMG_SIZE} = require("./constants");
-const {loadImage, createCanvas} = require("canvas");
-const {resize_image} = require("./general_helper");
+const {MessageEmbed} = require("discord.js")
+const {IMG_SIZE} = require("./constants")
+const {loadImage, createCanvas} = require("canvas")
+const {resize_image} = require("./general_helper")
 
 class Grade {
     static get R() {
@@ -183,136 +183,6 @@ async function load_frames() {
     }
 }
 
-function map_attribute(att) {
-    att = att.toLowerCase()
-    switch (att) {
-        case "blue":
-        case "speed":
-        case "b":
-            return Type.BLUE
-        case "red":
-        case "strength":
-        case "r":
-            return Type.RED
-        case "green":
-        case "hp":
-        case "g":
-            return Type.GREEN
-    }
-}
-
-function map_grade(grade) {
-    grade = grade.toLowerCase()
-    switch (grade) {
-        case "r":
-            return Grade.R
-        case "sr":
-            return Grade.SR
-        case "ssr":
-            return Grade.SSR
-    }
-}
-
-function map_race(race) {
-    race = race.toLowerCase()
-    switch (race) {
-        case "demon":
-        case "demons":
-            return Race.DEMON
-        case "giant":
-        case "giants":
-            return Race.GIANT
-        case "fairy":
-        case "fairies":
-            return Race.FAIRY
-        case "human":
-        case "humans":
-            return Race.HUMAN
-        case "goddess":
-        case "god":
-        case "gods":
-            return Race.GODDESS
-        case "unknown":
-        case "?":
-        case "unknowns":
-            return Race.UNKNOWN
-    }
-}
-
-function map_event(event) {
-    event = event.replace(" ", "").toLowerCase()
-    switch (event) {
-        case "slime":
-        case "tensura":
-            return Event.SLIME
-        case "aot":
-        case "attackontitan":
-            return Event.AOT
-        case "kof":
-        case "kingoffighters":
-        case "kingoffighter":
-            return Event.KOF
-        case "val":
-        case "valentine":
-            return Event.VALENTINE
-        case "ny":
-        case "newyear":
-        case "newyears":
-            return Event.NEW_YEAR
-        case "hw":
-        case "hal":
-        case "halloween":
-            return Event.HALLOWEEN
-        case "fes":
-        case "fest":
-        case "festival":
-            return Event.FESTIVAL
-        case "re":
-        case "zero":
-        case "rezero":
-            return Event.REZERO
-        case "custom":
-            return Event.CUSTOM
-        case "stranger":
-        case "strangerthings":
-        case "st":
-        case "things":
-            return Event.STRANGER_THINGS
-        case "ragnarok":
-        case "ragna":
-        case "rok":
-            return Event.RAGNAROK
-    }
-}
-
-function map_affection(aff) {
-    aff = aff.replace(" ", "").toLowerCase()
-    switch (aff) {
-        case "sins":
-        case "sin":
-            return Affection.SINS
-        case "holyknight":
-        case "holyknights":
-        case "knight":
-        case "knights":
-            return Affection.KNIGHT
-        case "commandments":
-        case "commandment":
-            return Affection.COMMANDMENTS
-        case "catastrophes":
-        case "catastrophe":
-            return Affection.CATASTROPHES
-        case "archangels":
-        case "archangel":
-        case "angels":
-        case "angel":
-            return Affection.ANGEL
-        case "none":
-        case "no":
-            return Affection.NONE
-    }
-    return Affection.NONE
-}
 /*
 function compose_icon(attribute, grade, background = null) {
     bg_frame = FRAME_BG[grade].copy()
@@ -430,6 +300,10 @@ function longest_named_unit(samples = []) {
 }
 
 module.exports = {
+    ALL_RACES: ALL_RACES,
+    ALL_TYPES: ALL_TYPES,
+    ALL_GRADES: ALL_GRADES,
+    ALL_EVENT: ALL_EVENT,
     ALL_AFFECTIONS: ALL_AFFECTIONS,
     UNIT_LIST: UNIT_LIST,
     R_UNIT_LIST: R_UNIT_LIST,
@@ -437,6 +311,7 @@ module.exports = {
     FRAMES: FRAMES,
     FRAME_BG: FRAME_BG,
     Grade: Grade,
+    Race: Race,
     Event: Event,
     Type: Type,
     Unit: Unit,
@@ -445,5 +320,134 @@ module.exports = {
     unit_by_name: unit_by_name,
     unit_by_vague_name: unit_by_vague_name,
     longest_named_unit: longest_named_unit,
-    load_frames: load_frames
+    load_frames: load_frames,
+    mapAttribute: att => {
+        att = att.toLowerCase()
+        switch (att) {
+            case "blue":
+            case "speed":
+            case "b":
+                return Type.BLUE
+            case "red":
+            case "strength":
+            case "r":
+                return Type.RED
+            case "green":
+            case "hp":
+            case "g":
+                return Type.GREEN
+        }
+    },
+    mapGrade: grade => {
+        grade = grade.toLowerCase()
+        switch (grade) {
+            case "r":
+                return Grade.R
+            case "sr":
+                return Grade.SR
+            case "ssr":
+                return Grade.SSR
+        }
+    },
+    mapRace: race => {
+        race = race.toLowerCase()
+        switch (race) {
+            case "demon":
+            case "demons":
+                return Race.DEMON
+            case "giant":
+            case "giants":
+                return Race.GIANT
+            case "fairy":
+            case "fairies":
+                return Race.FAIRY
+            case "human":
+            case "humans":
+                return Race.HUMAN
+            case "goddess":
+            case "god":
+            case "gods":
+                return Race.GODDESS
+            case "unknown":
+            case "?":
+            case "unknowns":
+                return Race.UNKNOWN
+        }
+    },
+    mapEvent: event => {
+        event = event.replace(" ", "").toLowerCase()
+        switch (event) {
+            case "slime":
+            case "tensura":
+                return Event.SLIME
+            case "aot":
+            case "attackontitan":
+                return Event.AOT
+            case "kof":
+            case "kingoffighters":
+            case "kingoffighter":
+                return Event.KOF
+            case "val":
+            case "valentine":
+                return Event.VALENTINE
+            case "ny":
+            case "newyear":
+            case "newyears":
+                return Event.NEW_YEAR
+            case "hw":
+            case "hal":
+            case "halloween":
+                return Event.HALLOWEEN
+            case "fes":
+            case "fest":
+            case "festival":
+                return Event.FESTIVAL
+            case "re":
+            case "zero":
+            case "rezero":
+                return Event.REZERO
+            case "custom":
+                return Event.CUSTOM
+            case "stranger":
+            case "strangerthings":
+            case "st":
+            case "things":
+                return Event.STRANGER_THINGS
+            case "ragnarok":
+            case "ragna":
+            case "rok":
+                return Event.RAGNAROK
+            default:
+                return Event.BASE_GAME
+        }
+    },
+    mapAffection: aff => {
+        aff = aff.replace(" ", "").toLowerCase()
+        switch (aff) {
+            case "sins":
+            case "sin":
+                return Affection.SINS
+            case "holyknight":
+            case "holyknights":
+            case "knight":
+            case "knights":
+                return Affection.KNIGHT
+            case "commandments":
+            case "commandment":
+                return Affection.COMMANDMENTS
+            case "catastrophes":
+            case "catastrophe":
+                return Affection.CATASTROPHES
+            case "archangels":
+            case "archangel":
+            case "angels":
+            case "angel":
+                return Affection.ANGEL
+            case "none":
+            case "no":
+                return Affection.NONE
+        }
+        return Affection.NONE
+    },
+
 }

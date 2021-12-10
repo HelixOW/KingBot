@@ -82,7 +82,7 @@ module.exports = {
                     await multi(interaction, banner, undefined, undefined, undefined, false)
                     break
                 case "whale":
-                    await whale(interaction, banner, undefined, false)
+                    await whale(interaction, banner, undefined, undefined, false)
                     break
                 case "rotation":
                     await multi(interaction, banner, true, undefined, undefined, false)

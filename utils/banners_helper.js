@@ -1,10 +1,9 @@
 const units_helper = require("./units_helper")
 const {Grade, UNIT_LIST, Event} = units_helper
-const {remove_items, IMG_SIZE} = require("./constants");
-const {getRandomArbitrary, getRandomInt, chunk} = require("./general_helper");
-const {createCanvas, loadImage} = require("canvas");
-const {longest_named_unit} = require("./units_helper");
-const { imageToCanvas } = require('./image_helper')
+const {remove_items, IMG_SIZE} = require("./constants")
+const {getRandomArbitrary, getRandomInt, chunk} = require("./general_helper")
+const {createCanvas} = require("canvas")
+const {longest_named_unit} = require("./units_helper")
 
 class Banner {
     constructor(

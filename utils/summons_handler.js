@@ -78,10 +78,11 @@ module.exports = {
                     units.push({unit: unit, amount: 1})
             }
 
+            if(ref) await interaction.deferReply()
             await addToBox(person, units)
 
             if(units.length > 0)
-                units.sort((a, b) => Grade.to_int(b.unit.grade) - Grade.to_int(a.unit.grade))
+                units.sort((a, b) => Grade.toInt(b.unit.grade) - Grade.toInt(a.unit.grade))
 
             return await interaction.editReply({
                 files: [new MessageAttachment(await banner_rotation_image(units), "units.png")],
@@ -192,6 +193,7 @@ module.exports = {
                 else
                     drawnSSRs[x] = 1
             }
+            counter++
         }
 
         await addToBox(person, drawnUnits)

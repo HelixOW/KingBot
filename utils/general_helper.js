@@ -1,5 +1,4 @@
 const {createCanvas} = require("canvas");
-const {IMG_SIZE} = require("./constants");
 module.exports = {
     getRandomArbitrary: function getRandomArbitrary(min, max) {
         return Math.random() * (max - min) + min;
@@ -30,5 +29,17 @@ module.exports = {
         ctx.restore()
 
         return canvas
+    },
+
+    removeItem: (arr, value, amount = 1) => {
+        let i = 0;
+        let amountCount = 0
+        while (i < arr.length && amountCount < amount) {
+            if (arr[i] === value)
+                arr.splice(i, 1);
+            else
+                ++i;
+        }
+        return arr;
     }
 }

@@ -154,4 +154,28 @@ module.exports = {
         return canvas.toBuffer()
     },
     boxImage:boxImage,
+    teamImage: async (team) => {
+        const teamRows = chunk(team, 4)
+
+        const canvas = createCanvas(
+            (IMG_SIZE * 4) + (draw_offset * 3),
+            ((IMG_SIZE * teamRows.length) + (draw_offset * (teamRows.length - 1)))
+        )
+        const ctx = canvas.getContext("2d")
+        
+        let y = 0
+        for (const units of teamRows) {
+            let x = 0
+            for (const unit of units) {
+                let icon = copy_canvas(await unit.refresh_icon())
+
+                ctx.drawImage(icon, x, y)
+
+                x += IMG_SIZE + draw_offset
+            }
+            y += IMG_SIZE + draw_offset
+        }
+
+        return canvas.toBuffer()
+    }
 }
