@@ -33,6 +33,7 @@ const rest = new REST({version: '9'}).setToken(token);
     try {
         await rest.put(
             Routes.applicationGuildCommands(clientId, "812695655852015628"),
+            //Routes.applicationCommands(clientId),
             {body: commands}
         );
 

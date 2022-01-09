@@ -10,6 +10,10 @@ module.exports = {
         return ((Math.random() * (max - min))|0) + min;
     },
 
+    getRandomArrayValue: (array) => {
+        return array[module.exports.getRandomInt(0, array.length - 1)]
+    },
+
     chunk: function chunk(arr, chunkSize) {
         const res = [];
         for (let i = 0; i < arr.length; i += chunkSize) {

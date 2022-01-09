@@ -37,6 +37,12 @@ class Type {
     static get BLUE() {
         return "blue"
     }
+    static get DARK() {
+        return "dark"
+    }
+    static get LIGHT() {
+        return "light"
+    }
 
     static toInt(type) {
         switch (type) {
@@ -46,6 +52,10 @@ class Type {
                 return 1
             case "blue":
                 return 2
+            case "dark":
+                return 3
+            case "light":
+                return 4
         }
     }
 
@@ -57,6 +67,10 @@ class Type {
                 return "#ed4e2f"
             case "green":
                 return "#339216"
+            case "dark":
+                return "#2e073b"
+            case "light":
+                return "#ddaf7d"
         }
     }
 }
@@ -144,7 +158,7 @@ class Affection {
 
 const ALL_RACES = [Race.DEMON, Race.GIANT, Race.HUMAN, Race.FAIRY, Race.GODDESS, Race.UNKNOWN]
 const ALL_GRADES = [Grade.R, Grade.SR, Grade.SSR]
-const ALL_TYPES = [Type.RED, Type.GREEN, Type.BLUE]
+const ALL_TYPES = [Type.RED, Type.GREEN, Type.BLUE, Type.DARK, Type.LIGHT]
 const ALL_EVENT = [Event.BASE_GAME, Event.SLIME, Event.AOT, Event.KOF, Event.FESTIVAL, Event.NEW_YEAR,
     Event.VALENTINE, Event.HALLOWEEN, Event.REZERO, Event.STRANGER_THINGS, Event.RAGNAROK]
 let ALL_AFFECTIONS = [Affection.SINS, Affection.COMMANDMENTS, Affection.CATASTROPHES, Affection.ANGEL,
@@ -336,6 +350,12 @@ module.exports = {
             case "hp":
             case "g":
                 return Type.GREEN
+            case "dark":
+            case "d":
+                return Type.DARK
+            case "light":
+            case "l":
+                return Type.LIGHT
         }
     },
     mapGrade: grade => {

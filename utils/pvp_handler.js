@@ -1,6 +1,6 @@
-const {ALL_RACES, ALL_TYPES, ALL_GRADES, ALL_EVENT, ALL_AFFECTIONS, UNIT_LIST, Race} = require("./units_helper")
+const {ALL_RACES, ALL_TYPES, ALL_GRADES, ALL_EVENT, ALL_AFFECTIONS, UNIT_LIST } = require("./units_helper")
 const {ALL_BANNER_LIST} = require("./banners_helper")
-const {getRandomInt, removeItem} = require("./general_helper")
+const {getRandomInt, getRandomArrayValue} = require("./general_helper")
 
 module.exports = {
     getUnitsMatching: (races = null, types = null, grades = null, events = null, affections = null, names = null, banners = null) => {
@@ -9,8 +9,10 @@ module.exports = {
         if(grades === null) grades = [...ALL_GRADES]
         if(events === null) events = [...ALL_EVENT]
         if(affections === null) affections = [...ALL_AFFECTIONS]
-        if(names === null) names = UNIT_LIST.map(u => u.name.toLowerCase().replace(" ", ""))
+        if(names === null) names = UNIT_LIST.map(u => u.simple_name.toLowerCase().replace(" ", ""))
         if(banners === null) banners = ALL_BANNER_LIST.map(b => b.unique_name.toLowerCase())
+
+        names = names.map(name => name.toLowerCase().replace(" ", ""))
     
         function test(unit) {
             return races.includes(unit.race) &&
@@ -18,11 +20,11 @@ module.exports = {
               grades.includes(unit.grade) &&
                events.includes(unit.event) &&
                 affections.includes(unit.affection) &&
-                 names.includes(unit.name.toLowerCase().replace(" ", "")) &&
+                 names.includes(unit.simple_name.toLowerCase().replace(" ", "")) &&
                   banners.some(b => unit.home_banners.includes(b))
         }
     
-        return UNIT_LIST.filter(test)
+        return UNIT_LIST.filter(u => test(u))
     },
 
     getRandomUnit: (races, types, grades, events, affections, names, banners) => {
@@ -60,10 +62,11 @@ module.exports = {
     },
 
     getRandomTeam: (races, types, grades, events, affections, names, banners, amount) => {
-        const proposedTeam = Array(4).fill(module.exports.getUnitsMatching(races, types, grades, events, affections, names, banners))
+        const matchingUnits = module.exports.getUnitsMatching(races, types, grades, events, affections, names, banners)
+        const proposedTeam = Array.from({length: 4}, () => getRandomArrayValue(matchingUnits))
 
         try {
-            module.exports.replaceDuplicates(races, types, grades, events, affections, names, banners, maxRaces, proposedTeam)
+            module.exports.replaceDuplicates(races, types, grades, events, affections, names, banners, proposedTeam)
         } catch(e) {
             throw e
         }

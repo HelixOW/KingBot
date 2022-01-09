@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageAttachment } = require("discord.js");
 const { DefaultEmbed, ErrorEmbed } = require("../../utils/embeds");
-const { mapRace, mapAttribute, mapGrade, mapEvent, Type } = require("../../utils/units_helper");
+const { mapRace, mapAttribute, mapGrade, mapEvent } = require("../../utils/units_helper");
 const { getRandomTeam } = require("../../utils/pvp_handler");
 const { teamImage } = require("../../utils/image_helper");
 
@@ -30,6 +30,8 @@ module.exports = {
 					["Red", "red"],
 					["Green", "green"],
 					["Blue", "blue"],
+					["Dark", "dark"],
+					["Light", "light"]
 				])
 		)
 		.addStringOption(option =>
@@ -73,7 +75,18 @@ module.exports = {
 					["None", "none"],
 				])
 		)
-		.addStringOption(option => option.setName("banner").setDescription("Is the team in any banner?")),
+		.addStringOption(option => 
+			option
+				.setName("banner")
+				.setDescription("Is the unit in any banner?")
+				.addChoices([
+					["General", "general"],
+					["Race I", "race one"],
+					["Race II", "race two"],
+					["Humans", "human"],
+					["Ragnarok", "ragnarok"]
+				])
+		),
 
 	async execute(interaction) {
 		let race = interaction.options.getString("race") === null ? null : mapRace(interaction.options.getString("race"));
@@ -83,15 +96,19 @@ module.exports = {
 		let affection = interaction.options.getString("affection") === null ? null : mapRace(interaction.options.getString("affection"));
 		let banners = interaction.options.getString("banner") === null ? null : interaction.options.getString("banner").split(",");
 
+		await interaction.deferReply();
+		
 		try {
-			await interaction.deferReply();
 			await interaction.editReply({
 				embeds: [new DefaultEmbed().setImage("attachment://unit.jpg")],
-				files: [new MessageAttachment(await teamImage(getRandomTeam(race, type, grade, event, affection, names, banners, 1)), "unit.jpg")],
+				files: [new MessageAttachment(await teamImage(getRandomTeam(race, type, grade, event, affection, null, banners, 1)), "unit.jpg")],
 			});
 		} catch(e) {
-			if(e instanceof RangeError)
+			if(e instanceof RangeError) {
+				console.log("Failed " + e);
 				return await interaction.editReply({ embeds: [new ErrorEmbed(`Can't find any team`)] });
+			} else
+				console.log(e)
 		}
 	},
 };

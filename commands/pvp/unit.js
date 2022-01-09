@@ -29,6 +29,8 @@ module.exports = {
 					["Red", "red"],
 					["Green", "green"],
 					["Blue", "blue"],
+					["Dark", "dark"],
+					["Light", "light"]
 				])
 		)
 		.addStringOption(option =>
@@ -73,7 +75,18 @@ module.exports = {
 				])
 		)
 		.addStringOption(option => option.setName("name").setDescription("Does your unit have to match a name?"))
-        .addStringOption(option => option.setName("banner").setDescription("Is the unit in any banner?")),
+        .addStringOption(option => 
+			option
+				.setName("banner")
+				.setDescription("Is the unit in any banner?")
+				.addChoices([
+					["General", "general"],
+					["Race I", "race one"],
+					["Race II", "race two"],
+					["Humans", "human"],
+					["Ragnarok", "ragnarok"]
+				])
+		),
 
 	async execute(interaction) {
 		let race = interaction.options.getString("race") === null ? null : mapRace(interaction.options.getString("race"));
