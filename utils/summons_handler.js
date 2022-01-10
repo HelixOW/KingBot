@@ -69,6 +69,7 @@ module.exports = {
     multi: async (interaction, banner, rotation = false, amount = 1, person = interaction.member, ref = true) => {
         if(rotation) {
             const units = []
+            const dbUnits = []
             for(let i = 0; i < (banner.loyalty / 30) * 11; i++) {
                 const unit = await banner.unit_by_chance()
 
@@ -79,7 +80,12 @@ module.exports = {
             }
 
             if(ref) await interaction.deferReply()
-            await addToBox(person, units)
+            for(let uUnit of units) {
+                for(let i = 0; i < uUnit.amount; i++) {
+                    dbUnits.push(uUnit.unit)
+                }
+            }
+            await addToBox(person, dbUnits)
 
             if(units.length > 0)
                 units.sort((a, b) => Grade.toInt(b.unit.grade) - Grade.toInt(a.unit.grade))

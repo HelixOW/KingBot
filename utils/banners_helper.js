@@ -56,7 +56,7 @@ class Banner {
         this.r_unit_rate = r_unit_rate
 
         this.ssr_chance = (this.ssr_unit_rate_up * this.rate_up_units.length) + (this.ssr_unit_rate * this.ssr_units.length)
-        this.ssr_rate_up_chance = this.rate_up_units.length !== 0 ? (this.ssr_unit_rate_up * this.rate_up_units) : 0
+        this.ssr_rate_up_chance = this.rate_up_units.length !== 0 ? (this.ssr_unit_rate_up * this.rate_up_units.length) : 0
         this.sr_chance = this.sr_unit_rate * this.sr_units.length
 
         this.unit_list_image = []

@@ -123,11 +123,15 @@ async function addToBox(boxUser, units) {
 
 async function getBox(boxUser) {
     return boxQuery.all(boxUser.id, boxUser.guild.id).map(a => {
+        if(a.unit_id === null)
+            return null
         let u = unit_by_id(a.unit_id)
         if(u !== null)
             a.unit = u
         return a
     }).sort((a, b) => {
+        if(a === null || b === null)
+            return 0
         if(Grade.toInt(b.unit.grade) > Grade.toInt(a.unit.grade))
             return 1
         else if(Grade.toInt(b.unit.grade) < Grade.toInt(a.unit.grade))

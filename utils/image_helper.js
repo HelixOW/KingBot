@@ -125,6 +125,8 @@ async function boxImage(box) {
     for (const units of box_rows) {
         let x = 0
         for (const ukv of units) {
+            if(ukv === null || ukv.unit === undefined)
+                continue
             let icon = copy_canvas(await ukv.unit.refresh_icon())
             let ictx = icon.getContext("2d")
 
