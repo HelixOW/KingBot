@@ -1,7 +1,8 @@
-const {SlashCommandBuilder} = require("@discordjs/builders");
+const {SlashCommandBuilder, time} = require("@discordjs/builders");
 const units = require("../utils/units_helper")
-const {MessageActionRow, MessageButton, MessageAttachment, ButtonInteraction} = require("discord.js");
+const {MessageActionRow, MessageButton, MessageAttachment} = require("discord.js");
 const {UNIT_LIST} = require("../utils/units_helper");
+const { sendMenu } = require("../utils/embeds");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,41 +24,47 @@ module.exports = {
         if(unit === undefined || unit === null) return
         if(unit[pointer] === undefined || unit[pointer] === null) return
 
-        const msg = await interaction.reply({
-            embeds: [unit[pointer].info_embed()],
-            components: unit.length > 1 ? [new MessageActionRow().addComponents(
-                new MessageButton()
-                    .setCustomId("prev")
-                    .setStyle("PRIMARY")
-                    .setEmoji("⬅️"),
-                new MessageButton()
-                    .setCustomId("next")
-                    .setStyle("PRIMARY")
-                    .setEmoji("➡️")
-            )] : [],
-            files: [new MessageAttachment(unit[pointer].icon_path)]
-        })
-
-        const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
-        const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
-
-        collector.on('collect', async i => {
-            if (!i.isButton()) return
-            await i.message.removeAttachments()
-
-            if(i.customId === "prev") {
-                pointer -= 1
-                if(pointer < 0) pointer = unit.length - 1
-            } else if(i.customId === "next") {
-                pointer += 1
-                if(pointer === unit.length) pointer = 0
-            }
-
-            if(unit[pointer] === undefined || unit[pointer] === null) return
-            await i.update({
+        await sendMenu(
+            interaction,
+            {
                 embeds: [unit[pointer].info_embed()],
+                components: unit.length > 1 ? [new MessageActionRow().addComponents(
+                    new MessageButton()
+                        .setCustomId("prev")
+                        .setStyle("PRIMARY")
+                        .setEmoji("⬅️"),
+                    new MessageButton()
+                        .setCustomId("next")
+                        .setStyle("PRIMARY")
+                        .setEmoji("➡️")
+                )] : [],
                 files: [new MessageAttachment(unit[pointer].icon_path)]
-            })
-        })
+            }, 
+            true,
+            [{
+                customIds: ["prev", "next"],
+                idleTime: 15000,
+                preCollect: async () => {},
+                onCollect: async (i, message) => {
+                    if (!i.isButton()) return
+                    await i.message.removeAttachments()
+    
+                    if(i.customId === "prev") {
+                        pointer -= 1
+                        if(pointer < 0) pointer = unit.length - 1
+                    } else if(i.customId === "next") {
+                        pointer += 1
+                        if(pointer === unit.length) pointer = 0
+                    }
+    
+                    if(unit[pointer] === undefined || unit[pointer] === null) return
+                    await i.update({
+                        embeds: [unit[pointer].info_embed()],
+                        files: [new MessageAttachment(unit[pointer].icon_path)]
+                    })
+                },
+                postCollect: async (collected, reason) => await interaction.editReply({components: []})
+            }]
+        )
     },
 }

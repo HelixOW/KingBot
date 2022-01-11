@@ -1,8 +1,7 @@
-const { DefaultEmbed, ErrorEmbed } = require("./embeds")
+const { DefaultEmbed, sendMenu } = require("./embeds")
 const {MessageActionRow, MessageButton, MessageAttachment} = require("discord.js")
 const {banner_multi_image, banner_whale_image, banner_rotation_image} = require("./image_helper");
 const {Grade} = require("./units_helper");
-const embeds = require("./embeds");
 const {addToBox} = require("./database_helper")
 
 module.exports = {
@@ -14,56 +13,58 @@ module.exports = {
 
         await addToBox(person, units)
 
-        if(ref) await interaction.deferReply()
-
-        let msg = await interaction.editReply({
-            content: (person === interaction.member ? " " : `Single for ${person}`),
-            files: [new MessageAttachment((await units[0].refresh_icon()).toBuffer(), "unit.png")],
-            embeds: [new DefaultEmbed()
-                .setTitle(banner.pretty_name + " (1x summon)")
-                .setImage("attachment://unit.png")
-            ],
-            components: units.length > 1 ? [new MessageActionRow().addComponents(
-                new MessageButton()
-                    .setCustomId("prev")
-                    .setStyle("PRIMARY")
-                    .setEmoji("⬅️"),
-                new MessageButton()
-                    .setCustomId("next")
-                    .setStyle("PRIMARY")
-                    .setEmoji("➡️")
-            )] : [],
-        })
-
-        if(units.length === 1)
-            return
-
         let pointer = 0
-        const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
-        const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
 
-        collector.on('collect', async i => {
-            if (!i.isButton()) return
-            await i.message.removeAttachments()
-
-            if(i.customId === "prev") {
-                pointer -= 1
-                if(pointer < 0) pointer = units.length - 1
-            } else if(i.customId === "next") {
-                pointer += 1
-                if(pointer === units.length) pointer = 0
-            }
-
-            if(units[pointer] === undefined || units[pointer] === null || units[pointer].length === 0) return
-            await i.deferUpdate()
-            await i.editReply({
-                files: [new MessageAttachment((await units[pointer].refresh_icon()).toBuffer(), "unit.png")],
+        await sendMenu(
+            interaction,
+            {
+                content: (person === interaction.member ? " " : `Single for ${person}`),
+                files: [new MessageAttachment((await units[0].refresh_icon()).toBuffer(), "unit.png")],
                 embeds: [new DefaultEmbed()
-                    .setTitle(`${banner.pretty_name} (1x summon) [${pointer + 1}.]`)
+                    .setTitle(banner.pretty_name + " (1x summon)")
                     .setImage("attachment://unit.png")
                 ],
-            })
-        })
+                components: units.length > 1 ? [new MessageActionRow().addComponents(
+                    new MessageButton()
+                        .setCustomId("prev")
+                        .setStyle("PRIMARY")
+                        .setEmoji("⬅️"),
+                    new MessageButton()
+                        .setCustomId("next")
+                        .setStyle("PRIMARY")
+                        .setEmoji("➡️")
+                )] : [],
+            },
+            ref,
+            [{
+                customIds: ["prev", "next"],
+                idleTime: 30000,
+                preCollect: async () => {if(units.length === 1) throw new Error()},
+                onCollect: async (i, message) => {
+                    if (!i.isButton()) return
+                    await i.message.removeAttachments()
+        
+                    if(i.customId === "prev") {
+                        pointer -= 1
+                        if(pointer < 0) pointer = units.length - 1
+                    } else if(i.customId === "next") {
+                        pointer += 1
+                        if(pointer === units.length) pointer = 0
+                    }
+        
+                    if(units[pointer] === undefined || units[pointer] === null || units[pointer].length === 0) return
+                    await i.deferUpdate()
+                    await i.editReply({
+                        files: [new MessageAttachment((await units[pointer].refresh_icon()).toBuffer(), "unit.png")],
+                        embeds: [new DefaultEmbed()
+                            .setTitle(`${banner.pretty_name} (1x summon) [${pointer + 1}.]`)
+                            .setImage("attachment://unit.png")
+                        ],
+                    })
+                },
+                postCollect: async (collected, reason) => await interaction.editReply({components: []})
+            }]
+        )
     },
 
     multi: async (interaction, banner, rotation = false, amount = 1, person = interaction.member, ref = true) => {
@@ -101,6 +102,7 @@ module.exports = {
         }
 
         const units = []
+        let pointer = 0
 
         for(let i = 1; i <= amount; i++) {
             const multi = []
@@ -111,56 +113,56 @@ module.exports = {
 
         await addToBox(person, units.flat())
 
-        if(ref) await interaction.deferReply()
-
-        let msg = await interaction.editReply({
-            content: (person === interaction.member ? " " : `Multi for ${person}`),
-            files: [new MessageAttachment(await banner_multi_image(units[0], banner.banner_type === 5), "units.png")],
-            embeds: [new DefaultEmbed()
-                .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon)`)
-                .setImage("attachment://units.png")
-            ],
-            components: units.length > 1 ? [new MessageActionRow().addComponents(
-                new MessageButton()
-                    .setCustomId("prev")
-                    .setStyle("PRIMARY")
-                    .setEmoji("⬅️"),
-                new MessageButton()
-                    .setCustomId("next")
-                    .setStyle("PRIMARY")
-                    .setEmoji("➡️")
-            )] : [],
-        })
-
-        if(units.length === 1)
-            return
-
-        let pointer = 0
-        const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
-        const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
-
-        collector.on('collect', async i => {
-            if (!i.isButton()) return
-            await i.message.removeAttachments()
-
-            if(i.customId === "prev") {
-                pointer -= 1
-                if(pointer < 0) pointer = units.length - 1
-            } else if(i.customId === "next") {
-                pointer += 1
-                if(pointer === units.length) pointer = 0
-            }
-
-            if(units[pointer] === undefined || units[pointer] === null || units[pointer].length === 0) return
-            await i.deferUpdate()
-            await i.editReply({
-                files: [new MessageAttachment(await banner_multi_image(units[pointer], banner.banner_type === 5), "units.png")],
+        await sendMenu(
+            interaction, 
+            {
+                content: (person === interaction.member ? " " : `Multi for ${person}`),
+                files: [new MessageAttachment(await banner_multi_image(units[0], banner.banner_type === 5), "units.png")],
                 embeds: [new DefaultEmbed()
-                    .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon) [${pointer + 1}.]`)
+                    .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon)`)
                     .setImage("attachment://units.png")
                 ],
-            })
-        })
+                components: units.length > 1 ? [new MessageActionRow().addComponents(
+                    new MessageButton()
+                        .setCustomId("prev")
+                        .setStyle("PRIMARY")
+                        .setEmoji("⬅️"),
+                    new MessageButton()
+                        .setCustomId("next")
+                        .setStyle("PRIMARY")
+                        .setEmoji("➡️")
+                )] : [],
+            },
+            ref,
+            [{
+                customIds: ["prev", "next"],
+                idleTime: 60000,
+                preCollect: async () => {if(units.length === 1) throw new Error()},
+                onCollect: async (i, message) => {
+                    if (!i.isButton()) return
+                    await i.message.removeAttachments()
+        
+                    if(i.customId === "prev") {
+                        pointer -= 1
+                        if(pointer < 0) pointer = units.length - 1
+                    } else if(i.customId === "next") {
+                        pointer += 1
+                        if(pointer === units.length) pointer = 0
+                    }
+        
+                    if(units[pointer] === undefined || units[pointer] === null || units[pointer].length === 0) return
+                    await i.deferUpdate()
+                    await i.editReply({
+                        files: [new MessageAttachment(await banner_multi_image(units[pointer], banner.banner_type === 5), "units.png")],
+                        embeds: [new DefaultEmbed()
+                            .setTitle(`${banner.pretty_name} (${banner.banner_type === 11 ? "11" : "5"}x summon) [${pointer + 1}.]`)
+                            .setImage("attachment://units.png")
+                        ],
+                    })
+                },
+                postCollect: async (collected, reason) => await interaction.editReply({components: []})
+            }]
+        )
     },
 
     whale: async (interaction, banner, unit = undefined, person = interaction.member, ref = true) => {
@@ -216,49 +218,53 @@ module.exports = {
         })
     },
 
-    infos: async (interaction, banner, msg, ref = true) => {
-        if(ref) await interaction.deferReply()
-        await interaction.editReply({
-            files: [new MessageAttachment(banner.unit_list_image[0].toBuffer(), "units.png")],
-            embeds: [new DefaultEmbed()
-                .setTitle(`Units in ${banner.pretty_name}  [Page: 1]`)
-                .setImage("attachment://units.png")
-            ],
-            components: [
-                new MessageActionRow().addComponents(
-                    new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
-                    new MessageButton().setCustomId("next").setStyle("PRIMARY").setEmoji("➡️")
-                )
-            ]
-        })
-
+    infos: async (interaction, banner, ref = true) => {
         let pointer = 0
-        const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
-        const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
-
-        collector.on("collect", async i => {
-            if (!i.isButton()) return
-
-            switch (i.customId) {
-                case "prev":
-                    pointer -= 1
-                    if (pointer < 0) pointer = banner.unit_list_image.length - 1
-                    break
-                case "next":
-                    pointer += 1
-                    if (pointer === banner.unit_list_image.length) pointer = 0
-                    break
-            }
-
-            await i.message.removeAttachments()
-            await i.deferUpdate()
-            await i.editReply({
+        await sendMenu(
+            interaction,
+            {
+                files: [new MessageAttachment(banner.unit_list_image[0].toBuffer(), "units.png")],
                 embeds: [new DefaultEmbed()
-                    .setTitle(`Units in ${banner.pretty_name} [Page: ${pointer + 1}]`)
+                    .setTitle(`Units in ${banner.pretty_name}  [Page: 1]`)
                     .setImage("attachment://units.png")
                 ],
-                files: [new MessageAttachment(banner.unit_list_image[pointer].toBuffer(), "units.png")]
-            })
-        })
+                components: [
+                    new MessageActionRow().addComponents(
+                        new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
+                        new MessageButton().setCustomId("next").setStyle("PRIMARY").setEmoji("➡️")
+                    )
+                ]
+            },
+            ref,
+            [{
+                customIds: ["prev", "next"],
+                idleTime: 15000,
+                preCollect: async () => {},
+                onCollect: async (i, message) => {
+                    if (!i.isButton()) return
+        
+                    switch (i.customId) {
+                        case "prev":
+                            pointer -= 1
+                            if (pointer < 0) pointer = banner.unit_list_image.length - 1
+                            break
+                        case "next":
+                            pointer += 1
+                            if (pointer === banner.unit_list_image.length) pointer = 0
+                            break
+                    }
+        
+                    await i.message.removeAttachments()
+                    await i.update({
+                        embeds: [new DefaultEmbed()
+                            .setTitle(`Units in ${banner.pretty_name} [Page: ${pointer + 1}]`)
+                            .setImage("attachment://units.png")
+                        ],
+                        files: [new MessageAttachment(banner.unit_list_image[pointer].toBuffer(), "units.png")]
+                    })
+                },
+                postCollect: async (collected, reason) => await interaction.editReply({components: []})
+            }]
+        )
     }
 }

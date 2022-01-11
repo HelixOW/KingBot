@@ -1,8 +1,7 @@
 const {SlashCommandBuilder} = require("@discordjs/builders")
-const { loadImage } = require("canvas")
-const {MessageActionRow, MessageButton, MessageSelectMenu, MessageAttachment} = require("discord.js")
+const {MessageActionRow, MessageButton, MessageSelectMenu} = require("discord.js")
 const {ALL_BANNER_LIST, banner_by_name} = require("../../utils/banners_helper")
-const {DefaultEmbed} = require("../../utils/embeds")
+const {DefaultEmbed, sendMenu} = require("../../utils/embeds")
 const {single, multi, infos, whale} = require("../../utils/summons_handler")
 
 function registerOptions(banner) {
@@ -38,97 +37,105 @@ module.exports = {
         .setDescription("Show a summon menu"),
 
     async execute(interaction) {
-        await interaction.deferReply()
-        const msg = await interaction.editReply({
-            embeds: [new DefaultEmbed()
-                .setTitle(ALL_BANNER_LIST[0].pretty_name)
-                .setImage(ALL_BANNER_LIST[0].background)
-            ],
-            components: [
-                new MessageActionRow().addComponents(
-                    new MessageSelectMenu()
-                        .setCustomId("action")
-                        .setPlaceholder("Nothing Selected")
-                        .addOptions(registerOptions(ALL_BANNER_LIST[0]))
-                ),
-                new MessageActionRow().addComponents(
-                    new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
-                    new MessageButton().setCustomId("next").setStyle("PRIMARY").setEmoji("➡️")
-                )
-            ]
-        })
-
         let pointer = 0
         let state = "summon"
-        const filter = i => (i.customId === 'prev' || i.customId === 'next') && i.user.id === interaction.user.id
-        const actionFilter = i => i.customId === 'action' && i.member.id === interaction.member.id
-        const collector = interaction.channel.createMessageComponentCollector({filter, message: msg})
-        const actionCollector = interaction.channel.createMessageComponentCollector({actionFilter, message: msg})
-
-        actionCollector.on('collect', async i => {
-            if(!i.isSelectMenu()) return
-
-            const action = i.values[0]
-            const banner = banner_by_name(action.slice(action.indexOf(".") + 1))
-
-            await i.message.removeAttachments()
-            await interaction.editReply({components: []})
-
-            switch (action.slice(0, action.indexOf("."))) {
-                case "single":
-                    await single(interaction, banner, undefined, undefined, false)
-                    break
-                case "multi":
-                    await multi(interaction, banner, undefined, undefined, undefined, false)
-                    break
-                case "whale":
-                    await whale(interaction, banner, undefined, undefined, false)
-                    break
-                case "rotation":
-                    await multi(interaction, banner, true, undefined, undefined, false)
-                    break
-                case "infos":
-                    state = "infos"
-                    await infos(interaction, banner, msg, false)
-                    break
-            }
-        })
-
-        collector.on('collect', async i => {
-            if (!i.isButton() || state === "infos") return
-            
-            switch (i.customId) {
-                case "prev":
-                    pointer -= 1
-                    if (pointer < 0) pointer = ALL_BANNER_LIST.length - 1
-                    break
-                case "next":
-                    pointer += 1
-                    if (pointer === ALL_BANNER_LIST.length) pointer = 0
-                    break
-            }
-
-            await i.message.removeAttachments()
-
-            await i.deferUpdate()
-            await i.editReply({
+        await sendMenu(
+            interaction,
+            {
                 embeds: [new DefaultEmbed()
-                    .setTitle(ALL_BANNER_LIST[pointer].pretty_name)
-                    .setImage(ALL_BANNER_LIST[pointer].background)
+                    .setTitle(ALL_BANNER_LIST[0].pretty_name)
+                    .setImage(ALL_BANNER_LIST[0].background)
                 ],
                 components: [
                     new MessageActionRow().addComponents(
                         new MessageSelectMenu()
                             .setCustomId("action")
                             .setPlaceholder("Nothing Selected")
-                            .addOptions(registerOptions(ALL_BANNER_LIST[pointer]))
+                            .addOptions(registerOptions(ALL_BANNER_LIST[0]))
                     ),
                     new MessageActionRow().addComponents(
                         new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
                         new MessageButton().setCustomId("next").setStyle("PRIMARY").setEmoji("➡️")
                     )
                 ]
-            })
-        })
+            },
+            true,
+            [{
+                customIds: ["prev", "next"],
+                idleTime: -1,
+                preCollect: async () => {},
+                onCollect: async (i, message) => {
+                    if (!i.isButton() || state === "infos") return
+                    
+                    switch (i.customId) {
+                        case "prev":
+                            pointer -= 1
+                            if (pointer < 0) pointer = ALL_BANNER_LIST.length - 1
+                            break
+                        case "next":
+                            pointer += 1
+                            if (pointer === ALL_BANNER_LIST.length) pointer = 0
+                            break
+                    }
+        
+                    await i.message.removeAttachments()
+                    await i.update({
+                        embeds: [new DefaultEmbed()
+                            .setTitle(ALL_BANNER_LIST[pointer].pretty_name)
+                            .setImage(ALL_BANNER_LIST[pointer].background)
+                        ],
+                        components: [
+                            new MessageActionRow().addComponents(
+                                new MessageSelectMenu()
+                                    .setCustomId("action")
+                                    .setPlaceholder("Nothing Selected")
+                                    .addOptions(registerOptions(ALL_BANNER_LIST[pointer]))
+                            ),
+                            new MessageActionRow().addComponents(
+                                new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
+                                new MessageButton().setCustomId("next").setStyle("PRIMARY").setEmoji("➡️")
+                            )
+                        ]
+                    })
+                },
+                postCollect: async (collected, reason) => await interaction.editReply({components: []})
+            },
+            {
+                customIds: ["action"],
+                idleTime: -1,
+                preCollect: async () => {},
+                onCollect: async (i, message, collector) => {
+                    if(!i.isSelectMenu()) return
+        
+                    const action = i.values[0]
+                    const banner = banner_by_name(action.slice(action.indexOf(".") + 1))
+        
+                    await i.message.removeAttachments()
+                    await i.update({components: []})
+
+                    collector.stop()
+        
+                    switch (action.slice(0, action.indexOf("."))) {
+                        case "single":
+                            await single(interaction, banner, undefined, undefined, false)
+                            break
+                        case "multi":
+                            await multi(interaction, banner, undefined, undefined, undefined, false)
+                            break
+                        case "whale":
+                            await whale(interaction, banner, undefined, undefined, false)
+                            break
+                        case "rotation":
+                            await multi(interaction, banner, true, undefined, undefined, false)
+                            break
+                        case "infos":
+                            state = "infos"
+                            await infos(interaction, banner, false)
+                            break
+                    }
+                },
+                postCollect: async (collected, reason) => await interaction.editReply({components: []})
+            }]
+        )
     }
 }
