@@ -4,14 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "type": "pwa-node",
+            "console": "internalConsole",
+            "internalConsoleOptions": "neverOpen",
+            "name": "Bot",
+            "program": "${workspaceFolder}/index.ts",
             "request": "launch",
-            "name": "Launch Program",
+            "restart": true,
+            "runtimeExecutable": "ts-node",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\index.js"
+            "type": "pwa-node"
         }
     ]
 }

@@ -1,11 +1,7 @@
-const {SlashCommandBuilder} = require("@discordjs/builders")
-const {banner_by_name} = require("../../utils/banners_helper")
-const {banner_rotation_image, banner_multi_image} = require("../../utils/image_helper")
-const {MessageAttachment, MessageEmbed, MessageActionRow, MessageButton} = require("discord.js");
-const units_helper = require("../../utils/units_helper");
-const { DefaultEmbed } = require("../../utils/embeds");
-const { multi, single } = require("../../utils/summons_handler");
-const {Grade} = units_helper
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { Banner, bannerByName } from "../../utils/banners";
+import { single } from "../../utils/summons_handler";
+import { GuildMember } from 'discord.js';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,14 +18,14 @@ module.exports = {
                 .setDescription("How many singles do you want to do?")),
 
     async execute(interaction) {
-        let banner,
-            amount = interaction.options.getInteger("amount"),
-            person = interaction.options.getMentionable("for")
+        let banner: Banner,
+            amount: number = interaction.options.getInteger("amount"),
+            person: GuildMember = interaction.options.getMentionable("for") as GuildMember
 
         if(interaction.options.getString("banner") === null)
-            banner = banner_by_name("general")
+            banner = bannerByName("general")
         else {
-            banner = banner_by_name(interaction.options.getString("banner"))
+            banner = bannerByName(interaction.options.getString("banner"))
 
             if(banner === undefined)
                 return interaction.reply({content: `Can't find the \`${interaction.options.getString("banner")}\` banner.`})
@@ -39,7 +35,7 @@ module.exports = {
             amount = 1
 
         if(person === undefined || person === null)
-            person = interaction.member
+            person = interaction.member as GuildMember
 
         if(amount < 0)
             return single(interaction, banner, 1, person)

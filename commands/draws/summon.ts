@@ -1,33 +1,33 @@
-const {SlashCommandBuilder} = require("@discordjs/builders")
-const {MessageActionRow, MessageButton, MessageSelectMenu} = require("discord.js")
-const {ALL_BANNER_LIST, banner_by_name} = require("../../utils/banners_helper")
-const {DefaultEmbed, sendMenu} = require("../../utils/embeds")
-const {single, multi, infos, whale} = require("../../utils/summons_handler")
+import { SlashCommandBuilder } from "@discordjs/builders"
+import { MessageActionRow, MessageButton, MessageSelectMenu, CommandInteraction } from 'discord.js';
+import { allBannerList, bannerByName, Banner } from '../../utils/banners';
+import { DefaultEmbed, sendMenu } from "../../utils/embeds"
+import { single, multi, infos, whale } from "../../utils/summons_handler"
 
-function registerOptions(banner) {
+function registerOptions(banner: Banner) {
     if(banner.shaftable)
         return [
-            {label: "Single", description: "Do a single on " + banner.pretty_name,
-                value: "single." + banner.unique_name},
-            {label: "Multi", description: "Do a multi on " + banner.pretty_name,
-                value: "multi." + banner.unique_name},
-            {label: "Rotation", description: "Do a rotation on " + banner.pretty_name,
-                value: "rotation." + banner.unique_name},
+            {label: "Single", description: "Do a single on " + banner.prettyName,
+                value: "single." + banner.uniqueName},
+            {label: "Multi", description: "Do a multi on " + banner.prettyName,
+                value: "multi." + banner.uniqueName},
+            {label: "Rotation", description: "Do a rotation on " + banner.prettyName,
+                value: "rotation." + banner.uniqueName},
             {label: "Whale", description: "Consecutive Multis until a SSR is drafted",
-                value: "whale." + banner.unique_name},
-            {label: "Units", description: "Show all Units on " + banner.pretty_name,
-                value: "infos." + banner.unique_name}
+                value: "whale." + banner.uniqueName},
+            {label: "Units", description: "Show all Units on " + banner.prettyName,
+                value: "infos." + banner.uniqueName}
         ]
     else
         return [
-            {label: "Single", description: "Do a single on " + banner.pretty_name,
-                value: "single." + banner.unique_name},
-            {label: "Multi", description: "Do a multi on " + banner.pretty_name,
-                value: "multi." + banner.unique_name},
-            {label: "Rotation", description: "Do a rotation on " + banner.pretty_name,
-                value: "rotation." + banner.unique_name},
-            {label: "Units", description: "Show all Units on " + banner.pretty_name,
-                value: "infos." + banner.unique_name}
+            {label: "Single", description: "Do a single on " + banner.prettyName,
+                value: "single." + banner.uniqueName},
+            {label: "Multi", description: "Do a multi on " + banner.prettyName,
+                value: "multi." + banner.uniqueName},
+            {label: "Rotation", description: "Do a rotation on " + banner.prettyName,
+                value: "rotation." + banner.uniqueName},
+            {label: "Units", description: "Show all Units on " + banner.prettyName,
+                value: "infos." + banner.uniqueName}
         ]
 }
 
@@ -36,22 +36,23 @@ module.exports = {
         .setName("summon")
         .setDescription("Show a summon menu"),
 
-    async execute(interaction) {
+    async execute(interaction: CommandInteraction) {
         let pointer = 0
         let state = "summon"
+
         await sendMenu(
             interaction,
             {
                 embeds: [new DefaultEmbed()
-                    .setTitle(ALL_BANNER_LIST[0].pretty_name)
-                    .setImage(ALL_BANNER_LIST[0].background)
+                    .setTitle(allBannerList.first().prettyName)
+                    .setImage(allBannerList.first().background)
                 ],
                 components: [
                     new MessageActionRow().addComponents(
                         new MessageSelectMenu()
                             .setCustomId("action")
                             .setPlaceholder("Nothing Selected")
-                            .addOptions(registerOptions(ALL_BANNER_LIST[0]))
+                            .addOptions(registerOptions(allBannerList.first()))
                     ),
                     new MessageActionRow().addComponents(
                         new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
@@ -70,26 +71,26 @@ module.exports = {
                     switch (i.customId) {
                         case "prev":
                             pointer -= 1
-                            if (pointer < 0) pointer = ALL_BANNER_LIST.length - 1
+                            if (pointer < 0) pointer = allBannerList.size - 1
                             break
                         case "next":
                             pointer += 1
-                            if (pointer === ALL_BANNER_LIST.length) pointer = 0
+                            if (pointer === allBannerList.size) pointer = 0
                             break
                     }
         
-                    await i.message.removeAttachments()
+                    await message.removeAttachments()
                     await i.update({
                         embeds: [new DefaultEmbed()
-                            .setTitle(ALL_BANNER_LIST[pointer].pretty_name)
-                            .setImage(ALL_BANNER_LIST[pointer].background)
+                            .setTitle(allBannerList.at(pointer).prettyName)
+                            .setImage(allBannerList.at(pointer).background)
                         ],
                         components: [
                             new MessageActionRow().addComponents(
                                 new MessageSelectMenu()
                                     .setCustomId("action")
                                     .setPlaceholder("Nothing Selected")
-                                    .addOptions(registerOptions(ALL_BANNER_LIST[pointer]))
+                                    .addOptions(registerOptions(allBannerList.at(pointer)))
                             ),
                             new MessageActionRow().addComponents(
                                 new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
@@ -108,9 +109,9 @@ module.exports = {
                     if(!i.isSelectMenu()) return
         
                     const action = i.values[0]
-                    const banner = banner_by_name(action.slice(action.indexOf(".") + 1))
+                    const banner = bannerByName(action.slice(action.indexOf(".") + 1))
         
-                    await i.message.removeAttachments()
+                    await message.removeAttachments()
                     await i.update({components: []})
 
                     collector.stop()

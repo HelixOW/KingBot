@@ -1,8 +1,8 @@
-const { SlashCommandBuilder } = require("@discordjs/builders")
-const { MessageAttachment } = require("discord.js")
-const { DefaultEmbed, ErrorEmbed } = require("../../utils/embeds")
-const { mapRace, mapAttribute, mapGrade, mapEvent, Type } = require("../../utils/units_helper")
-const {getRandomUnit} = require("../../utils/pvp_handler")
+import { SlashCommandBuilder } from "@discordjs/builders"
+import { MessageAttachment, CommandInteraction } from 'discord.js';
+import { DefaultEmbed, ErrorEmbed } from "../../utils/embeds"
+import { Race, Grade, Event, Type, Affection } from '../../utils/units';
+import { getRandomUnit } from "../../utils/pvp_handler"
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -88,24 +88,24 @@ module.exports = {
 				])
 		),
 
-	async execute(interaction) {
-		let race = interaction.options.getString("race") === null ? null : mapRace(interaction.options.getString("race"));
-		let type = interaction.options.getString("type") === null ? null : mapAttribute(interaction.options.getString("type"));
-		let grade = interaction.options.getString("grade") === null ? null : mapGrade(interaction.options.getString("grade"));
-		let event = interaction.options.getString("event") === null ? null : mapEvent(interaction.options.getString("event"));
-		let affection = interaction.options.getString("affection") === null ? null : mapRace(interaction.options.getString("affection"));
+	async execute(interaction: CommandInteraction) {
+		let race = interaction.options.getString("race") === null ? null : [Race.fromString(interaction.options.getString("race"))];
+		let type = interaction.options.getString("type") === null ? null : [Type.fromString(interaction.options.getString("type"))];
+		let grade = interaction.options.getString("grade") === null ? null : [Grade.fromString(interaction.options.getString("grade"))];
+		let event = interaction.options.getString("event") === null ? null : [Event.fromString(interaction.options.getString("event"))];
+		let affection = interaction.options.getString("affection") === null ? null : [Affection.fromString(interaction.options.getString("affection"))];
         let names = interaction.options.getString("name") === null ? null : interaction.options.getString("name").split(',');
         let banners = interaction.options.getString("banner") === null ? null : interaction.options.getString("banner").split(',');
 
-        let unit = getRandomUnit(race, type, grade, event, affection, names, banners)
+        let unit = getRandomUnit(race, type, grade, event, affection, names, banners, [])
         
         if(unit === null)
             return await interaction.reply({embeds: [new ErrorEmbed(`Can't find any unit matching provided criteria`)]})
 
         await interaction.deferReply()
         await interaction.editReply({
-            embeds: [new DefaultEmbed(unit.name).setColor(Type.to_discord_color(unit.type)).setImage("attachment://unit.jpg")],
-            files: [new MessageAttachment((await unit.refresh_icon()).toBuffer(),"unit.jpg")]
+            embeds: [new DefaultEmbed(unit.name).setColor(unit.type.toDiscordColor()).setImage("attachment://unit.jpg")],
+            files: [new MessageAttachment((await unit.refreshIcon()).toBuffer(),"unit.jpg")]
         })
 	},
 };

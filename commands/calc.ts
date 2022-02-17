@@ -1,61 +1,65 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { DefaultEmbed } = require("../utils/embeds");
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { DefaultEmbed } from "../utils/embeds";
+import { CommandInteraction } from 'discord.js';
 
-function rawCalcDmg(modifier, atk, crit_damage, crit_chance, defense, crit_defense, crit_resistance, type_advantage, variance) {
-	let crit_mod = crit_chance - crit_resistance > Math.random() ? crit_damage - crit_defense : 1;
-	type_advantage = type_advantage > 0 ? 1.3 : type_advantage < 0 ? 0.8 : 1;
+function rawCalcDmg(modifier: number, atk: number, critDamage: number, critChance: number,
+	 defense: number, critDefense: number, critRes: number, typeAdvantage: number, variance: boolean) {
+	let crit_mod = critChance - critRes > Math.random() ? critDamage - critDefense : 1;
+	typeAdvantage = typeAdvantage > 0 ? 1.3 : typeAdvantage < 0 ? 0.8 : 1;
 	let variance_mod = variance ? 0.85 + (1.05 - 0.85) : 1;
 
-	return variance_mod * (modifier * atk * (crit_mod - defense)) * type_advantage;
+	return variance_mod * (modifier * atk * (crit_mod - defense)) * typeAdvantage;
 }
 
-function calcDamage(modifier, atk, atk_buff, atk_rel_buff, crit_damage, def, def_rel_debuff, crit_def, type_advantage, spike, amplify_stacks, freeze, damage_dealt_buff, crits) {
-	let buffed_atk = atk * atk_buff;
-	let additional_damage = 1 + 0.3 * amplify_stacks;
+function calcDamage(modifier: number, atk: number, atkBuff: number, atkRelBuff: number[], critDamage: number,
+	 def: number, defRelDebuff: number[], critDef: number, typeAdvantage: number, spike: boolean, aplifyStacks: number,
+	 freeze: number, damageDealtBuff: number, crits: boolean) {
+	let buffed_atk = atk * atkBuff;
+	let additional_damage = 1 + 0.3 * aplifyStacks;
 
 	if (freeze) {
-		def_rel_debuff = [];
+		defRelDebuff = [];
 		if (freeze >= 2) additional_damage += freeze - 1 + (freeze - 3) * 0.2;
 	}
-	if (damage_dealt_buff) additional_damage += damage_dealt_buff;
+	if (damageDealtBuff) additional_damage += damageDealtBuff;
 
-	for (let buffs of atk_rel_buff) {
+	for (let buffs of atkRelBuff) {
 		buffed_atk *= 1 + buffs[0];
-		crit_damage += buffs[2];
+		critDamage += buffs[2];
 	}
 
-	for (let d of def_rel_debuff) crit_def = Math.max(crit_def + d, 0);
+	for (let d of defRelDebuff) critDef = Math.max(critDef + d, 0);
 
-	if (spike) crit_damage *= 2;
+	if (spike) critDamage *= 2;
 
-	return rawCalcDmg(modifier * additional_damage, buffed_atk, crit_damage, crits, def, crit_def, 0, type_advantage, false);
+	return rawCalcDmg(modifier * additional_damage, buffed_atk, critDamage, crits ? 999 : 0, def, critDef, 0, typeAdvantage, false);
 }
 
 function calcKelak(
-	boss,
-	atk,
-	critDamage,
-	difficulty,
-	ult,
-	ggowther,
-	stacks,
-	deriBuff,
-	deriEvade,
-	sariel,
-	ellatteStacks,
-	ellatteDebuff,
-	ellatteUlt,
-	helbramBuff,
-	freeze,
-	marBuff,
-	isCrit
+	boss: string,
+	atk: number,
+	critDamage: number,
+	difficulty: string,
+	ult: number,
+	ggowther: number,
+	stacks: number,
+	deriBuff: number,
+	deriEvade: boolean,
+	sariel: boolean,
+	ellatteStacks: number,
+	ellatteDebuff: number,
+	ellatteUlt: boolean,
+	helbramBuff: number,
+	freeze: number,
+	marBuff: number,
+	isCrit: boolean
 ) {
 	critDamage = critDamage / 100;
 	let defense = 0;
 	let critDefense = {
-		kelak: { extreme: 0.75, hard: 0.47, normal: 0.35 },
-		einek: { extreme: 0, hard: 0, normal: 0 },
-		akumu: { extreme: 0.5, hard: 0.47, normal: 0 },
+		"kelak": { "extreme": 0.75, "hard": 0.47, normal: 0.35 },
+		"einek": { extreme: 0, hard: 0, normal: 0 },
+		"akumu": { extreme: 0.5, hard: 0.47, normal: 0 },
 	}[boss][difficulty];
 
 	let atkBuff = 1;
@@ -90,12 +94,15 @@ function calcKelak(
 	switch (marBuff) {
 		case 1:
 			marBuff = 0.3;
+			amplifyStacks += 2
 			break;
 		case 2:
 			marBuff = 0.45;
+			amplifyStacks += 2
 			break;
 		case 3:
 			marBuff = 0.5;
+			amplifyStacks += 2
 			break;
 		default:
 			break;
@@ -144,27 +151,27 @@ module.exports = {
 		.addIntegerOption(option => option.setName("margaret").setDescription("What margaret buff level is used? Default: none").addChoices([["None", 0], ["1", 1], ["2", 2], ["3", 3]]))
 		.addBooleanOption(option => option.setName("crits").setDescription("Did it crit or not? Default: yes")),
 
-	async execute(interaction) {
-		let boss = interaction.options.getString("boss") === null ? "kelak" : interaction.options.getString("boss");
+	async execute(interaction: CommandInteraction) {
+		const boss = interaction.options.getString("boss") === null ? "kelak" : interaction.options.getString("boss");
 
-		let attack = interaction.options.getInteger("attack");
-		let critDamage = interaction.options.getInteger("crit_damage") === null ? 100 : interaction.options.getInteger("crit_damage");
-		let difficulty = interaction.options.getString("difficulty") === null ? "extreme" : interaction.options.getString("difficulty");
-		let ult = interaction.options.getInteger("ult") === null ? 6 : interaction.options.getInteger("ult");
-		let ggowtherStacks = interaction.options.getInteger("ggowther_stacks") === null ? 5 : interaction.options.getInteger("ggowther_stacks");
-		let deriStacks = interaction.options.getInteger("deri_stacks") === null ? 10 : interaction.options.getInteger("deri_stacks");
-		let deriBuff = interaction.options.getInteger("deri_buff") === null ? 3 : interaction.options.getInteger("deri_buff");
-		let deriEvade = interaction.options.getBoolean("deri_evade") === null ? true : interaction.options.getBoolean("deri_evade");
-		let sariel = interaction.options.getBoolean("sariel") === null ? true : interaction.options.getBoolean("sariel");
-		let ellatteStacks = interaction.options.getInteger("ellatte_stacks") === null ? 0 : interaction.options.getInteger("ellatte_stacks");
-		let ellateDebuff = interaction.options.getInteger("ellatte_debuff") === null ? 0 : interaction.options.getInteger("ellatte_debuff");
-		let ellatteUlt = interaction.options.getBoolean("ellatte_ult") === null ? false : interaction.options.getBoolean("ellatte_ult");
-		let helbramBuff = interaction.options.getInteger("helbram_buff") === null ? 3 : interaction.options.getInteger("helbram_buff");
-		let freeze = interaction.options.getInteger("freeze") === null ? 0 : interaction.options.getInteger("freeze");
-		let margaret = interaction.options.getInteger("margaret") === null ? 0 : interaction.options.getInteger("margaret");
-		let crits = interaction.options.getBoolean("crits") === null ? true : interaction.options.getBoolean("crits");
+		const attack: number = interaction.options.getInteger("attack");
+		const critDamage: number = interaction.options.getInteger("crit_damage") === null ? 100 : interaction.options.getInteger("crit_damage");
+		const difficulty: string = interaction.options.getString("difficulty") === null ? "extreme" : interaction.options.getString("difficulty");
+		const ult: number = interaction.options.getInteger("ult") === null ? 6 : interaction.options.getInteger("ult");
+		const ggowtherStacks: number = interaction.options.getInteger("ggowther_stacks") === null ? 5 : interaction.options.getInteger("ggowther_stacks");
+		const deriStacks: number = interaction.options.getInteger("deri_stacks") === null ? 10 : interaction.options.getInteger("deri_stacks");
+		const deriBuff: number = interaction.options.getInteger("deri_buff") === null ? 3 : interaction.options.getInteger("deri_buff");
+		const deriEvade: boolean = interaction.options.getBoolean("deri_evade") === null ? true : interaction.options.getBoolean("deri_evade");
+		const sariel: boolean = interaction.options.getBoolean("sariel") === null ? true : interaction.options.getBoolean("sariel");
+		const ellatteStacks: number = interaction.options.getInteger("ellatte_stacks") === null ? 0 : interaction.options.getInteger("ellatte_stacks");
+		const ellateDebuff: number = interaction.options.getInteger("ellatte_debuff") === null ? 0 : interaction.options.getInteger("ellatte_debuff");
+		const ellatteUlt: boolean = interaction.options.getBoolean("ellatte_ult") === null ? false : interaction.options.getBoolean("ellatte_ult");
+		const helbramBuff: number = interaction.options.getInteger("helbram_buff") === null ? 3 : interaction.options.getInteger("helbram_buff");
+		const freeze: number = interaction.options.getInteger("freeze") === null ? 0 : interaction.options.getInteger("freeze");
+		const margaret: number = interaction.options.getInteger("margaret") === null ? 0 : interaction.options.getInteger("margaret");
+		const crits: boolean = interaction.options.getBoolean("crits") === null ? true : interaction.options.getBoolean("crits");
 
-		let points = calcKelak(
+		const points = calcKelak(
 			boss,
 			attack,
 			critDamage,
