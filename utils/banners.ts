@@ -380,31 +380,6 @@ export function bannerByName(name: string) {
     return allBannerList.find(b => b.names.includes(name))
 }
 
-/* function create_jp_banner() {
-    const jp_units = UNIT_LIST.filter(u => u.jp)
-    const ssrs = jp_units.filter(u => u.grade === Grade.SSR)
-
-    if (banner_by_name("jp") !== undefined)
-        ALL_BANNER_LIST = remove_items(ALL_BANNER_LIST, banner_by_name("jp"))
-
-    if (ssrs.length < 1) return
-
-    ALL_BANNER_LIST.push(
-        new Banner(["kr", "jp"],
-            "JP/KR exclusive draw",
-            jp_units,
-            [],
-            4 / ssrs.length,
-            0.5,
-            ((100 - 4 - (6.6667 * R_UNIT_LIST.length)) / SR_UNIT_LIST.length),
-            6.6667,
-            "https://raw.githubusercontent.com/WhoIsAlphaHelix/evilmortybot/master/gc/banners/A9619A31-B793-4E12-8DF6-D0FCC706DEF2_1_105_c.jpeg",
-            true,
-            true,
-            11, 150)
-    )
-} */
-
 export async function loadBanners() {
     await bannerByName("general").reload(unitList.filter(u => u.homeBanners.includes("general") || (u.grade !== Grade.SSR && u.event === Event.BASE_GAME)))
     await bannerByName("race 1").reload(unitList.filter(u => u.homeBanners.includes("race 1")))

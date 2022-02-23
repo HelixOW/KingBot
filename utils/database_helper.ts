@@ -1,7 +1,6 @@
 import { Unit, Grade, Event, unitById, load_frames, Type, Race, Affection, rUnitList, srUnitList, unitList } from './units';
 import { allBannerList, Banner, loadBanners } from "./banners";
 import { GuildMember } from 'discord.js';
-import UserProfile from './user_profiles';
 
 const sqlite = require("better-sqlite3")
 const db = sqlite('./data/data.db')
@@ -27,41 +26,6 @@ const boxStatement = {
     amount: db.prepare("SELECT amount FROM box_units WHERE user_id=? AND guild=? AND unit_id=?"),
     info: db.prepare("SELECT unit_id, amount FROM box_units WHERE user_id=? AND guild=?"),
     update: "UPDATE box_units SET amount = (CASE {a}ELSE amount END) WHERE user_id=? AND guild=?"
-}
-
-const profileData = {
-    create: {
-        profiles: db.prepare(tableCreate("profiles", "",
-            "discord_id INTEGER PRIMARY KEY",
-            "multis INTEGER DEFAULT 0",
-            "singles INTEGER DEFAULT 0")),
-        
-        gameUnits: db.prepare(tableCreate("game_units", "", 
-            "discord_id INTEGER NOT NULL",
-            "unit INTEGER NOT NULL",
-            "level INTEGER DEFAULT 0",
-            "awakening INTEGER DEFAULT 0",
-            "super_awakening INTEGER DEFAULT 0",
-            "cc INTEGER DEFAULT 0")),
-
-        demonTeams: db.prepare(tableCreate("demon_teams", "",
-            "discord_id INTEGER NOT NULL",
-            "demon TEXT NOT NULL",
-            "place_a INTEGER NOT NULL",
-            "place_b INTEGER NOT NULL",
-            "place_c INTEGER NOT NULL",
-            "place_d INTEGER NOT NULL",
-            "link_a INTEGER",
-            "link_b INTEGER",
-            "link_c INTEGER",
-            "link_d INTEGER"))
-    },
-
-    select: {
-        profileByUser: db.prepare("SELECT multis, singles FROM profiles WHERE discord_id=?"),
-        demonTeamByDemonAndUser: db.prepare("SELECT place_a, place_b, place_c, place_d, sub_a, sub_b, sub_c, sub_d FROM demon_teams WHERE demon=? AND discord_id=?"),
-        demonTeamsByUser: db.prepare("SELECT demon, place_a, place_b, place_c, place_d, sub_a, sub_b, sub_c, sub_d FROM demon_teams WHERE discord_id=?")
-    }
 }
 
 export async function readUnitsFromDatabase(): Promise<boolean> {
@@ -203,17 +167,4 @@ export function getBox(boxUser: GuildMember): {unit_id: number, amount: number, 
         else (b.unit.type.toInt() < a.unit.type.toInt())
             return -1
     })
-}
-
-export function initiateProfileTable() {
-    profileData.create.profiles.run()
-}
-
-export function getProfile(person: GuildMember): UserProfile {
-    const profile: {multis: number, singles: number} = profileData.select.profileByUser.get(person.id)
-    const boxData: {unit_id: number, amount: number, unit: Unit}[] = getBox(person)
-    const demonData: {
-        demon: string, place_a: number, place_b: number, place_c: number, place_d: number, sub_a: number, sub_b: number, sub_c: number, sub_d: number
-    } = profileData.select.demonTeamsByUser.get(person.id)
-    
 }
