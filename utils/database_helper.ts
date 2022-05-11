@@ -5,13 +5,11 @@ import { GuildMember } from 'discord.js';
 const sqlite = require("better-sqlite3")
 const db = sqlite('./data/data.db')
 
-function tableCreate(name: string, extra: string, ...fields: string[]) {
-    return "CREATE TABLE IF NOT EXISTS " + name + " (" + fields.join(",") + ")" + (extra.length !== 0 ? " " + extra : "") + ";"
-}
-
 const unitStatement = {
-    info: db.prepare("SELECT unit_id, name, simple_name, type, grade, race, event, affection, icon_path, is_jp, emoji_id, banner FROM units ORDER BY unit_id"),
-    additionalName: db.prepare("SELECT name FROM additional_unit_names WHERE unit_id=?")
+    info: db.prepare("SELECT unit_id, name, simple_name, variation, type, grade, race, event, affection, emoji_id, banner FROM units ORDER BY unit_id"),
+    additionalName: db.prepare("SELECT name FROM additional_unit_names WHERE unit_id=?"),
+    latestId: db.prepare("SELECT unit_id FROM units ORDER BY unit_id DESC"),
+    add: db.prepare("INSERT INTO units (unit_id, name, simple_name, variation, type, grade, race, event, affection, emoji_id, banner) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
 }
 
 const bannerStatement = {
@@ -39,15 +37,14 @@ export async function readUnitsFromDatabase(): Promise<boolean> {
         unitList.set(unit.unit_id, await new Unit(
             unit.unit_id,
             unit.name, 
-            unit.simple_name, 
+            unit.simple_name,
+            unit.variation,
             addNames, 
             Type.fromString(unit.type),
             Grade.fromString( unit.grade), 
             Race.fromString(unit.race), 
             Event.fromString(unit.event), 
             Affection.fromString(unit.affection),
-            unit.unit_id < 0 ? unit.icon_path : "data/gc/icons/{}.png",
-            unit.is_jp, 
             unit.emoji_id, 
             unit.banner === null ? [] : unit.banner.replace("part 1", "general").replace("part 2", "general").replace("part 3", "general").split(",")
         ).updateIcon())
@@ -56,13 +53,27 @@ export async function readUnitsFromDatabase(): Promise<boolean> {
     unitList.filter(u => u.grade === Grade.R && u.event === Event.BASE_GAME).forEach(u => rUnitList.set(u.id, u))
     unitList.filter(u => u.grade === Grade.SR && u.event === Event.BASE_GAME).forEach(u => srUnitList.set(u.id, u))
 
-    await load_frames()
+    //await load_frames()
     unitList.sort((a: Unit, b: Unit) => {
         if(a.event === Event.CUSTOM) return -1
         else return 1
     })
 
     return true
+}
+
+export async function registerNewUnit(unit: Unit, event: String, affection: String) {
+    unitList.set(unit.id, unit)
+    unitStatement.add.run(
+        unit.id,
+        unit.name, unit.simpleName, unit.variationName,
+        unit.type.toString(), unit.grade.toString(), unit.race.toString(), event, affection,
+        "", null
+    )
+}
+
+export function latestUnitId() {
+    return unitStatement.latestId.get().unit_id
 }
 
 export async function readBannersFromDatabase(): Promise<void> {

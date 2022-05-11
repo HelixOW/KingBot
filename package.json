@@ -27,8 +27,11 @@
     "canvas": "^2.8.0",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.5.1",
+    "ioredis": "^5.0.4",
     "jest": "^27.4.3",
     "node-canvas-text": "^1.0.2",
+    "puppeteer": "^13.4.0",
+    "redis": "^4.1.0",
     "request": "^2.88.2",
     "typescript": "^4.5.2"
   },

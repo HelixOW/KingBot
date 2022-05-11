@@ -1,2 +1,2 @@
-- Use Collection instead of array
-https://discordjs.guide/additional-info/collections.html#array-like-methods
+Auto update units from GC Database
+Add UR Units

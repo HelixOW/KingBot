@@ -406,6 +406,13 @@ export class Unit {
     public set simpleName(value: string) {
         this._simpleName = value
     }
+    private _variationName: string
+    public get variationName(): string {
+        return this._variationName
+    }
+    public set variationName(value: string) {
+        this._variationName = value
+    }
     private _altNames: string[] = []
     public get altNames(): string[] {
         return this._altNames
@@ -455,13 +462,6 @@ export class Unit {
     public set iconPath(value: string) {
         this._iconPath = value
     }
-    private _jp: boolean = false
-    public get jp(): boolean {
-        return this._jp
-    }
-    public set jp(value: boolean) {
-        this._jp = value
-    }
     private _emoji: string
     public get emoji(): string {
         return this._emoji
@@ -481,27 +481,26 @@ export class Unit {
     public constructor(
         id: number,
         name: string,
-        simple_name: string,
+        simpleName: string,
+        variationName: string,
         alt_names: string[] = [],
         type: Type,
         grade: Grade,
         race: Race,
         event: Event = Event.BASE_GAME,
         affection: Affection = Affection.NONE,
-        icon_path: string = "gc/icons/{}.png",
-        jp: boolean = false,
         emoji: string,
         home_banner: string[] = []) {
             this.id = id
             this.name = name
-            this.simpleName = simple_name
+            this.simpleName = simpleName
+            this.variationName = variationName === null ? "" : variationName
             this.type = type
             this.grade = grade
             this.race = race
             this.event = event
             this.affection = affection
-            this.iconPath = icon_path.replace("{}", this.id.toString())
-            this.jp = jp
+            this.iconPath = "./data/gc/icons/{}.png".replace("{}", this.id.toString())
             this.emoji = `<:${this.id > 9 ? this.id : "0" + this.id}:${emoji}>`
             this.homeBanners = home_banner
             this.altNames = alt_names
@@ -520,7 +519,6 @@ export class Unit {
             .addField("Race " + this.race.toEmoji(), `\`\`\`${this.race}\`\`\``, true)
             .addField("Event", `\`\`\`${this.event}\`\`\``, true)
             .addField("Affection", `\`\`\`${this.affection}\`\`\``, true)
-            .addField("JP", `\`\`\`${this.jp ? "Yes" : "No"}\`\`\``, true)
             .addField("ID", `\`\`\`${this.id}\`\`\``, true)
             .addField("Emoji " + this.emoji, `\`\`\`${this.emoji}\`\`\``, true)
 
@@ -550,21 +548,28 @@ export class Unit {
     }
 
     public async updateIcon(): Promise<Unit> {
-        if (this.id > 0) {
+        try{
             const canvas = createCanvas(IMG_SIZE, IMG_SIZE)
             const ctx = canvas.getContext("2d")
             const icon = await loadImage(this.iconPath)
-
+    
             ctx.save()
             ctx.scale(IMG_SIZE / icon.width, IMG_SIZE / icon.height)
             ctx.drawImage(icon, 0, 0)
             ctx.restore()
-
+    
             this.icon = canvas
+        } catch (Error) {
+            console.log(`Unable to update icon for ${this.id} (${this.name}) [${this.iconPath}]`);
+            
         }
 
         return new Promise(res => res(this))
     }
+}
+
+export function unitExists(name: string, grade: Grade, type: Type) {
+    return [...unitList.values()].filter((u: Unit) => (u.simpleName.toLowerCase() === name || u.variationName.toLowerCase() === name) && u.grade === grade && u.type === type).length > 0
 }
 
 export function unitById(id: number): Unit {
