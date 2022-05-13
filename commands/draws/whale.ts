@@ -1,13 +1,12 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { bannerByName, findBannerContaining, findBannerContainingAny, allBannerList, Banner } from '../../utils/banners';
-import { MessageAttachment, MessageEmbed, MessageActionRow, MessageButton, CommandInteraction, GuildMember, Collection } from 'discord.js';
+import { bannerByName, findBannerContaining, findBannerContainingAny, allBannerList, Banner } from "../../utils/banners";
+import { MessageAttachment, MessageEmbed, MessageActionRow, MessageButton, CommandInteraction, GuildMember, Collection } from "discord.js";
 import { Grade, unitByVagueName, Unit } from "../../utils/units";
 import { DefaultEmbed, ErrorEmbed, sendMenu } from "../../utils/embeds";
 import { whale } from "../../utils/summons_handler";
 
-
 module.exports = {
-    data: new SlashCommandBuilder()
+	/* data: new SlashCommandBuilder()
         .setName("whale")
         .setDescription("Summon until you get a SSR or desired Unit.")
         .addStringOption(option =>
@@ -146,5 +145,5 @@ module.exports = {
                 postCollect: async (reason, _) => await interaction.editReply({components: []})
             }]
         )
-    },
-}
+    }, */
+};

@@ -1,44 +1,24 @@
-const {REST} = require('@discordjs/rest')
-const {Routes} = require('discord-api-types/v9')
-const {token, clientId} = require('./data/config.json')
-const fs = require("fs")
-const path = require("path")
+import { readCommands, ICommand } from "./utilities/ICommand";
+const { REST } = require("@discordjs/rest");
+const { Routes } = require("discord-api-types/v9");
+const { token, clientId } = require("./data/config.json");
 
-let commandFiles = []
+const commands = [];
 
-function readCommandsFolderRec(dir) {
-    fs.readdirSync(dir).forEach(file => {
-        const abs = path.join(dir, file);
-        if (fs.statSync(abs).isDirectory()) return readCommandsFolderRec(abs);
-        else return commandFiles.push({
-            "path": dir.replace("\\", "/"), "file": file
-        });
-    });
-}
+readCommands((command: ICommand) => commands.push(command.data.toJSON()));
 
-readCommandsFolderRec("commands")
-
-commandFiles = commandFiles.filter(file => file.file.endsWith('.ts'))
-const commands = []
-
-for (const file of commandFiles) {
-    const command = require("./" + file.path + "/" + file.file);
-
-    commands.push(command.data.toJSON())
-}
-
-const rest = new REST({version: '9'}).setToken(token);
+const rest = new REST({ version: "9" }).setToken(token);
 
 (async () => {
-    try {
-        await rest.put(
-            Routes.applicationGuildCommands(clientId, "812695655852015628"),
-            //Routes.applicationCommands(clientId),
-            {body: commands}
-        );
+	try {
+		await rest.put(
+			Routes.applicationGuildCommands(clientId, "812695655852015628"),
+			//Routes.applicationCommands(clientId),
+			{ body: commands }
+		);
 
-        console.log("Successfully registered application commands.")
-    } catch (e) {
-        console.error(e)
-    }
+		console.log("Successfully registered application commands.");
+	} catch (e) {
+		console.error(e);
+	}
 })();

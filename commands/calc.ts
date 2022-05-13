@@ -1,9 +1,19 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { DefaultEmbed } from "../utils/embeds";
-import { CommandInteraction } from 'discord.js';
+import { CacheType, CommandInteraction } from "discord.js";
+import { ICommand } from "../utilities/ICommand";
 
-function rawCalcDmg(modifier: number, atk: number, critDamage: number, critChance: number,
-	 defense: number, critDefense: number, critRes: number, typeAdvantage: number, variance: boolean) {
+function rawCalcDmg(
+	modifier: number,
+	atk: number,
+	critDamage: number,
+	critChance: number,
+	defense: number,
+	critDefense: number,
+	critRes: number,
+	typeAdvantage: number,
+	variance: boolean
+) {
 	let crit_mod = critChance - critRes > Math.random() ? critDamage - critDefense : 1;
 	typeAdvantage = typeAdvantage > 0 ? 1.3 : typeAdvantage < 0 ? 0.8 : 1;
 	let variance_mod = variance ? 0.85 + (1.05 - 0.85) : 1;
@@ -11,9 +21,22 @@ function rawCalcDmg(modifier: number, atk: number, critDamage: number, critChanc
 	return variance_mod * (modifier * atk * (crit_mod - defense)) * typeAdvantage;
 }
 
-function calcDamage(modifier: number, atk: number, atkBuff: number, atkRelBuff: number[], critDamage: number,
-	 def: number, defRelDebuff: number[], critDef: number, typeAdvantage: number, spike: boolean, aplifyStacks: number,
-	 freeze: number, damageDealtBuff: number, crits: boolean) {
+function calcDamage(
+	modifier: number,
+	atk: number,
+	atkBuff: number,
+	atkRelBuff: number[],
+	critDamage: number,
+	def: number,
+	defRelDebuff: number[],
+	critDef: number,
+	typeAdvantage: number,
+	spike: boolean,
+	aplifyStacks: number,
+	freeze: number,
+	damageDealtBuff: number,
+	crits: boolean
+) {
 	let buffed_atk = atk * atkBuff;
 	let additional_damage = 1 + 0.3 * aplifyStacks;
 
@@ -94,15 +117,15 @@ function calcKelak(
 	switch (marBuff) {
 		case 1:
 			marBuff = 0.3;
-			amplifyStacks += 2
+			amplifyStacks += 2;
 			break;
 		case 2:
 			marBuff = 0.45;
-			amplifyStacks += 2
+			amplifyStacks += 2;
 			break;
 		case 3:
 			marBuff = 0.5;
-			amplifyStacks += 2
+			amplifyStacks += 2;
 			break;
 		default:
 			break;
@@ -127,31 +150,111 @@ function calcKelak(
 	return calcDamage(ultModifier, atk, atkBuff, atkRelBuff, critDamage, defense, defRelDebuff, critDefense, advantage, spike, amplifyStacks, freeze, marBuff, isCrit);
 }
 
-module.exports = {
-	data: new SlashCommandBuilder()
-		.setName("calc")
-		.setDescription("Calculate a estimate Guildboss Score.")
-		.addIntegerOption(option => option.setName("attack").setDescription("How much attack does your Derieri have?").setRequired(true))
-		.addStringOption(option =>
-			option.setName("boss").setDescription("Which boss do you want to calculate?").addChoices([["Kelak", "kelak"], ["Einek", "einek"], ["Akumu", "akumu"]])
-		)
-		.addIntegerOption(option => option.setName("crit_damage").setDescription("How much crit damage (in %) does your Derieri have? Default: 100%"))
-		.addStringOption(option => option.setName("difficulty").setDescription("Which difficulty are you trying?").addChoices([["Extreme", "ex"], ["Hard", "hard"], ["Normal", "normal"]]))
-		.addIntegerOption(option => option.setName("ult").setDescription("What's your Derieri ult level?").addChoices([["1", 1], ["2", 2], ["3", 3], ["4", 4], ["5", 5], ["6", 6]]))
-		.addIntegerOption(option => option.setName("ggowther_stacks").setDescription("How many green Gowther stacks do you have? Default: 5"))
-		.addIntegerOption(option => option.setName("deri_stacks").setDescription("How many Derieri Stacks do you have? Default: 10"))
-		.addIntegerOption(option => option.setName("deri_buff").setDescription("What buff level did Derieri use? Default: 3").addChoices([["None", 0], ["1", 1], ["2", 2], ["3", 3]]))
-		.addBooleanOption(option => option.setName("deri_evade").setDescription("Does Derieri have a evade effect applied? Default: yes"))
-		.addBooleanOption(option => option.setName("sariel").setDescription("Do you use Sariel as a link? Default: yes"))
-		.addIntegerOption(option => option.setName("ellatte_stacks").setDescription("How many Ellatte Stacks do you have? Default: 0"))
-		.addIntegerOption(option => option.setName("ellatte_debuff").setDescription("What debuff level did Ellatte use? Default: none").addChoices([["None", 0], ["1", 1], ["2", 2], ["3", 3]]))
-		.addBooleanOption(option => option.setName("ellatte_ult").setDescription("Is Ellatte Ult active? Default: false"))
-		.addIntegerOption(option => option.setName("helbram_buff").setDescription("What buff level did Helbram use? Default: 3").addChoices([["None", 0], ["1", 1], ["2", 2], ["3", 3]]))
-		.addIntegerOption(option => option.setName("freeze").setDescription("What freeze level is used? Default: none").addChoices([["None", 0], ["1", 1], ["2", 2], ["3", 3]]))
-		.addIntegerOption(option => option.setName("margaret").setDescription("What margaret buff level is used? Default: none").addChoices([["None", 0], ["1", 1], ["2", 2], ["3", 3]]))
-		.addBooleanOption(option => option.setName("crits").setDescription("Did it crit or not? Default: yes")),
+export default class CalcCommand implements ICommand {
+	get data(): any {
+		return new SlashCommandBuilder()
+			.setName("calc")
+			.setDescription("Calculate a estimate Guildboss Score.")
+			.addIntegerOption(option => option.setName("attack").setDescription("How much attack does your Derieri have?").setRequired(true))
+			.addStringOption(option =>
+				option
+					.setName("boss")
+					.setDescription("Which boss do you want to calculate?")
+					.addChoices([
+						["Kelak", "kelak"],
+						["Einek", "einek"],
+						["Akumu", "akumu"],
+					])
+			)
+			.addIntegerOption(option => option.setName("crit_damage").setDescription("How much crit damage (in %) does your Derieri have? Default: 100%"))
+			.addStringOption(option =>
+				option
+					.setName("difficulty")
+					.setDescription("Which difficulty are you trying?")
+					.addChoices([
+						["Extreme", "ex"],
+						["Hard", "hard"],
+						["Normal", "normal"],
+					])
+			)
+			.addIntegerOption(option =>
+				option
+					.setName("ult")
+					.setDescription("What's your Derieri ult level?")
+					.addChoices([
+						["1", 1],
+						["2", 2],
+						["3", 3],
+						["4", 4],
+						["5", 5],
+						["6", 6],
+					])
+			)
+			.addIntegerOption(option => option.setName("ggowther_stacks").setDescription("How many green Gowther stacks do you have? Default: 5"))
+			.addIntegerOption(option => option.setName("deri_stacks").setDescription("How many Derieri Stacks do you have? Default: 10"))
+			.addIntegerOption(option =>
+				option
+					.setName("deri_buff")
+					.setDescription("What buff level did Derieri use? Default: 3")
+					.addChoices([
+						["None", 0],
+						["1", 1],
+						["2", 2],
+						["3", 3],
+					])
+			)
+			.addBooleanOption(option => option.setName("deri_evade").setDescription("Does Derieri have a evade effect applied? Default: yes"))
+			.addBooleanOption(option => option.setName("sariel").setDescription("Do you use Sariel as a link? Default: yes"))
+			.addIntegerOption(option => option.setName("ellatte_stacks").setDescription("How many Ellatte Stacks do you have? Default: 0"))
+			.addIntegerOption(option =>
+				option
+					.setName("ellatte_debuff")
+					.setDescription("What debuff level did Ellatte use? Default: none")
+					.addChoices([
+						["None", 0],
+						["1", 1],
+						["2", 2],
+						["3", 3],
+					])
+			)
+			.addBooleanOption(option => option.setName("ellatte_ult").setDescription("Is Ellatte Ult active? Default: false"))
+			.addIntegerOption(option =>
+				option
+					.setName("helbram_buff")
+					.setDescription("What buff level did Helbram use? Default: 3")
+					.addChoices([
+						["None", 0],
+						["1", 1],
+						["2", 2],
+						["3", 3],
+					])
+			)
+			.addIntegerOption(option =>
+				option
+					.setName("freeze")
+					.setDescription("What freeze level is used? Default: none")
+					.addChoices([
+						["None", 0],
+						["1", 1],
+						["2", 2],
+						["3", 3],
+					])
+			)
+			.addIntegerOption(option =>
+				option
+					.setName("margaret")
+					.setDescription("What margaret buff level is used? Default: none")
+					.addChoices([
+						["None", 0],
+						["1", 1],
+						["2", 2],
+						["3", 3],
+					])
+			)
+			.addBooleanOption(option => option.setName("crits").setDescription("Did it crit or not? Default: yes"));
+	}
 
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: CommandInteraction<CacheType>): Promise<any> {
 		const boss = interaction.options.getString("boss") === null ? "kelak" : interaction.options.getString("boss");
 
 		const attack: number = interaction.options.getInteger("attack");
@@ -222,5 +325,5 @@ module.exports = {
 					),
 			],
 		});
-	},
-};
+	}
+}
