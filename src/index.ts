@@ -10,7 +10,7 @@ export const client: Client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 const commands: Collection<String, any> = new Collection<String, any>();
 
 client.once("ready", async () => {
-	readCommands((cmd: ICommand) => commands.set(cmd.data.name, cmd));
+	(await readCommands()).forEach((cmd: ICommand) => commands.set(cmd.data.name, cmd));
 
 	const unitDataHandler = new UnitDataHandler();
 	const bannerDataHandler = new BannerDataHandler();

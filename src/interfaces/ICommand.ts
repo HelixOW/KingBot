@@ -7,7 +7,7 @@ export interface ICommand {
 	execute(interaction: CommandInteraction): Promise<any>;
 }
 
-export function readCommands(callback: Function, dir: string = "commands"): void {
+export async function readCommands(dir: string = "commands"): Promise<ICommand[]> {
 	const commandFiles: { path: string; osFile: string }[] = [];
 
 	function rec(rDir: string) {
@@ -26,10 +26,11 @@ export function readCommands(callback: Function, dir: string = "commands"): void
 
 	rec(dir);
 
-	commandFiles.forEach(async cmdData => {
-		const commandClass = await import("../" + cmdData.path + "/" + cmdData.osFile);
-		const command = new commandClass.default();
+	return await Promise.all(
+		commandFiles.map(async cmdData => {
+			const commandClass = await import("../" + cmdData.path + "/" + cmdData.osFile);
 
-		callback(command);
-	});
+			return new commandClass.default();
+		})
+	);
 }
