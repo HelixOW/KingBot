@@ -331,120 +331,20 @@ export class Affection {
 }
 
 export class Unit {
-	private static iconCache = new Collection<Unit, Canvas>();
-
-	private _id: number;
-	public get id(): number {
-		return this._id;
-	}
-	public set id(value: number) {
-		this._id = value;
-	}
-
-	private _name: string;
-	public get name(): string {
-		return this._name;
-	}
-	public set name(value: string) {
-		this._name = value;
-	}
-
-	private _simpleName: string;
-	public get simpleName(): string {
-		return this._simpleName;
-	}
-	public set simpleName(value: string) {
-		this._simpleName = value;
-	}
-
-	private _variationName: string;
-	public get variationName(): string {
-		return this._variationName;
-	}
-	public set variationName(value: string) {
-		this._variationName = value;
-	}
-
-	private _altNames: string[] = [];
-	public get altNames(): string[] {
-		return this._altNames;
-	}
-	public set altNames(value: string[]) {
-		this._altNames = value;
-	}
-
-	private _type: Type;
-	public get type(): Type {
-		return this._type;
-	}
-	public set type(value: Type) {
-		this._type = value;
-	}
-
-	private _grade: Grade;
-	public get grade(): Grade {
-		return this._grade;
-	}
-	public set grade(value: Grade) {
-		this._grade = value;
-	}
-
-	private _race: Race;
-	public get race(): Race {
-		return this._race;
-	}
-	public set race(value: Race) {
-		this._race = value;
-	}
-
-	private _event: Event = Event.BASE_GAME;
-	public get event(): Event {
-		return this._event;
-	}
-	public set event(value: Event) {
-		this._event = value;
-	}
-
-	private _affection: Affection = Affection.NONE;
-	public get affection(): Affection {
-		return this._affection;
-	}
-	public set affection(value: Affection) {
-		this._affection = value;
-	}
-
-	private _iconURL: string;
-	public get iconURL(): string {
-		return this._iconURL;
-	}
-	public set iconURL(value: string) {
-		this._iconURL = value;
-	}
-
-	private _emoji: string;
-	public get emoji(): string {
-		return this._emoji;
-	}
-	public set emoji(value: string) {
-		this._emoji = value;
-	}
-
-	private _homeBanners: string[] = [];
-	public get homeBanners(): string[] {
-		return this._homeBanners;
-	}
-	public set homeBanners(value: string[]) {
-		this._homeBanners = value;
-	}
-
-	private _icon: Canvas;
-	public get icon(): Canvas {
-		return this._icon;
-	}
-
-	public set icon(value: Canvas) {
-		this._icon = value;
-	}
+	public readonly id: number;
+	public readonly name: string;
+	public readonly simpleName: string;
+	public readonly variationName: string;
+	public readonly altNames: string[] = [];
+	public readonly type: Type;
+	public readonly grade: Grade;
+	public readonly race: Race;
+	public readonly event: Event = Event.BASE_GAME;
+	public readonly affection: Affection = Affection.NONE;
+	public readonly iconURL: string;
+	public readonly emoji: string;
+	public readonly homeBanners: string[] = [];
+	public icon: Canvas;
 
 	public constructor(
 		id: number,
@@ -496,7 +396,7 @@ export class Unit {
 
 		//if (this.homeBanners.length > 0) embed.addField("Included in", `\`\`\`${this.homeBanners.map(bannerStr => bannerByName(bannerStr).prettyName).join(",\n")}\`\`\``, false);
 
-		embed.setThumbnail(`attachment://${this.id}.png`);
+		embed.setThumbnail(this.iconURL);
 
 		return embed;
 	}

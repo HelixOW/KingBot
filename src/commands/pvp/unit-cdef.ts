@@ -1,11 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { MessageAttachment, CommandInteraction, CacheType } from "discord.js";
-import { DefaultEmbed, ErrorEmbed } from "../../utils/embeds";
-import { getRandomUnit } from "../../utils/handlers/pvpHandler";
-import { ICommand } from "../../interfaces/ICommand";
-import { Race, Type, Grade, Event, Affection } from "../../models/unit";
+import { ICommand } from "../../interfaces/i-command";
 
-export default class UnitCommand implements ICommand {
+export default class UnitCommand extends ICommand {
 	get data(): any {
 		return new SlashCommandBuilder()
 			.setName("unit")
@@ -89,24 +85,5 @@ export default class UnitCommand implements ICommand {
 						["Ragnarok", "ragnarok"],
 					])
 			);
-	}
-	async execute(interaction: CommandInteraction<CacheType>): Promise<any> {
-		let race = interaction.options.getString("race") === null ? null : [Race.fromString(interaction.options.getString("race"))];
-		let type = interaction.options.getString("type") === null ? null : [Type.fromString(interaction.options.getString("type"))];
-		let grade = interaction.options.getString("grade") === null ? null : [Grade.fromString(interaction.options.getString("grade"))];
-		let event = interaction.options.getString("event") === null ? null : [Event.fromString(interaction.options.getString("event"))];
-		let affection = interaction.options.getString("affection") === null ? null : [Affection.fromString(interaction.options.getString("affection"))];
-		let names = interaction.options.getString("name") === null ? null : interaction.options.getString("name").split(",");
-		let banners = interaction.options.getString("banner") === null ? null : interaction.options.getString("banner").split(",");
-
-		let unit = getRandomUnit(race, type, grade, event, affection, names, banners, []);
-
-		if (unit === null) return await interaction.reply({ embeds: [new ErrorEmbed(`Can't find any unit matching provided criteria`)] });
-
-		await interaction.deferReply();
-		await interaction.editReply({
-			embeds: [new DefaultEmbed(unit.name).setColor(unit.type.toDiscordColor()).setImage("attachment://unit.jpg")],
-			files: [new MessageAttachment((await unit.refreshIcon()).toBuffer(), "unit.jpg")],
-		});
 	}
 }

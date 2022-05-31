@@ -1,35 +1,30 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { MessageActionRow, MessageButton, MessageSelectMenu, CommandInteraction, CacheType } from "discord.js";
-import { allBannerList, bannerByName } from "../../utils/banners";
-import { DefaultEmbed, sendMenu } from "../../utils/embeds";
-import { ICommand } from "../../interfaces/ICommand";
+import { CommandInteraction, CacheType, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import ICommandExecutor from "../../interfaces/i-command-executor";
 import Banner from "../../models/banner";
-import { infos, multi, single, whale } from "../../utils/handlers/summonsHandler";
+import { allBannerList, bannerByName } from "../../utils/banners";
+import { sendMenu, DefaultEmbed } from "../../utils/embeds";
+import { infos, multi, single, whale } from "../../utils/handlers/summons-handler";
 
-function registerOptions(banner: Banner) {
-	if (banner.shaftable)
-		return [
-			{ label: "Single", description: "Do a single on " + banner.prettyName, value: "single." + banner.uniqueName },
-			{ label: "Multi", description: "Do a multi on " + banner.prettyName, value: "multi." + banner.uniqueName },
-			{ label: "Rotation", description: "Do a rotation on " + banner.prettyName, value: "rotation." + banner.uniqueName },
-			{ label: "Whale", description: "Consecutive Multis until a SSR is drafted", value: "whale." + banner.uniqueName },
-			{ label: "Units", description: "Show all Units on " + banner.prettyName, value: "infos." + banner.uniqueName },
-		];
-	else
-		return [
-			{ label: "Single", description: "Do a single on " + banner.prettyName, value: "single." + banner.uniqueName },
-			{ label: "Multi", description: "Do a multi on " + banner.prettyName, value: "multi." + banner.uniqueName },
-			{ label: "Rotation", description: "Do a rotation on " + banner.prettyName, value: "rotation." + banner.uniqueName },
-			{ label: "Units", description: "Show all Units on " + banner.prettyName, value: "infos." + banner.uniqueName },
-		];
-}
-
-export default class SummonCommand implements ICommand {
-	get data(): any {
-		return new SlashCommandBuilder().setName("summon").setDescription("Show a summon menu");
+export default class SummonCExecutor implements ICommandExecutor {
+	static registerOptions(banner: Banner) {
+		if (banner.shaftable)
+			return [
+				{ label: "Single", description: "Do a single on " + banner.prettyName, value: "single." + banner.uniqueName },
+				{ label: "Multi", description: "Do a multi on " + banner.prettyName, value: "multi." + banner.uniqueName },
+				{ label: "Rotation", description: "Do a rotation on " + banner.prettyName, value: "rotation." + banner.uniqueName },
+				{ label: "Whale", description: "Consecutive Multis until a SSR is drafted", value: "whale." + banner.uniqueName },
+				{ label: "Units", description: "Show all Units on " + banner.prettyName, value: "infos." + banner.uniqueName },
+			];
+		else
+			return [
+				{ label: "Single", description: "Do a single on " + banner.prettyName, value: "single." + banner.uniqueName },
+				{ label: "Multi", description: "Do a multi on " + banner.prettyName, value: "multi." + banner.uniqueName },
+				{ label: "Rotation", description: "Do a rotation on " + banner.prettyName, value: "rotation." + banner.uniqueName },
+				{ label: "Units", description: "Show all Units on " + banner.prettyName, value: "infos." + banner.uniqueName },
+			];
 	}
 
-	async execute(interaction: CommandInteraction<CacheType>): Promise<void> {
+	async execute(interaction: CommandInteraction<CacheType>): Promise<any> {
 		let pointer = 0;
 		let state = "summon";
 
@@ -39,7 +34,7 @@ export default class SummonCommand implements ICommand {
 				embeds: [new DefaultEmbed().setTitle(allBannerList.first().prettyName).setImage(allBannerList.first().background)],
 				components: [
 					new MessageActionRow().addComponents(
-						new MessageSelectMenu().setCustomId("action").setPlaceholder("Nothing Selected").addOptions(registerOptions(allBannerList.first()))
+						new MessageSelectMenu().setCustomId("action").setPlaceholder("Nothing Selected").addOptions(SummonCExecutor.registerOptions(allBannerList.first()))
 					),
 					new MessageActionRow().addComponents(
 						new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),
@@ -75,7 +70,7 @@ export default class SummonCommand implements ICommand {
 									new MessageSelectMenu()
 										.setCustomId("action")
 										.setPlaceholder("Nothing Selected")
-										.addOptions(registerOptions(allBannerList.at(pointer)))
+										.addOptions(SummonCExecutor.registerOptions(allBannerList.at(pointer)))
 								),
 								new MessageActionRow().addComponents(
 									new MessageButton().setCustomId("prev").setStyle("PRIMARY").setEmoji("⬅️"),

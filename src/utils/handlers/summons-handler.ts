@@ -1,5 +1,5 @@
 import { MessageAttachment, CommandInteraction, GuildMember, Collection } from "discord.js";
-import { multiDisplay, rotationDisplay, whaleDisplay } from "../../displays/bannerDisplay";
+import { multiDisplay, rotationDisplay, whaleDisplay } from "../../displays/banner-display";
 import Banner from "../../models/banner";
 import { Unit, Grade } from "../../models/unit";
 import { addToBox } from "../database_helper";

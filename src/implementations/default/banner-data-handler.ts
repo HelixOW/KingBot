@@ -1,6 +1,6 @@
-import IBannerDataHandler from "../../interfaces/IBannerDataHandler";
+import IBannerDataHandler from "../../interfaces/i-banner-data-handler";
 import banner from "../../models/banner";
-import { databaseHandler } from "../../utilities/databaseHandler";
+import { databaseHandler } from "../../utilities/database-handler";
 import { unitById } from "../../utils/units";
 import { bannerCache } from "../../utilities/cache";
 import Banner from "../../models/banner";

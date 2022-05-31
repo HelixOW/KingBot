@@ -1,210 +1,37 @@
-import { srUnitList, rUnitList, longestNamedUnit } from "../utils/units";
+import { longestNamedUnit } from "../utils/units";
 import { IMG_SIZE } from "../utilities/constants";
 import { getRandom, chunk, getRandomArrayValue } from "../utils/general";
 import { Canvas, createCanvas } from "canvas";
 import { Collection } from "discord.js";
-import { Unit, Grade } from "./unit";
+import { Unit, Grade, Event } from "./unit";
+import { unitCache } from "../utilities/cache";
 
 export default class Banner {
-	private _uniqueName: string;
-	public get uniqueName(): string {
-		return this._uniqueName;
-	}
-	public set uniqueName(value: string) {
-		this._uniqueName = value;
-	}
-
-	private _names: string[];
-	public get names(): string[] {
-		return this._names;
-	}
-	public set names(value: string[]) {
-		this._names = value;
-	}
-
-	private _prettyName: string;
-	public get prettyName(): string {
-		return this._prettyName;
-	}
-	public set prettyName(value: string) {
-		this._prettyName = value;
-	}
-
-	private _bannerType: number;
-	public get bannerType(): number {
-		return this._bannerType;
-	}
-	public set bannerType(value: number) {
-		this._bannerType = value;
-	}
-
-	private _background: string;
-	public get background(): string {
-		return this._background;
-	}
-	public set background(value: string) {
-		this._background = value;
-	}
-
-	private _shaftable: boolean;
-	public get shaftable(): boolean {
-		return this._shaftable;
-	}
-	public set shaftable(value: boolean) {
-		this._shaftable = value;
-	}
-
-	private _loyalty: number;
-	public get loyalty(): number {
-		return this._loyalty;
-	}
-	public set loyalty(value: number) {
-		this._loyalty = value;
-	}
-
-	private _order: number;
-	public get order(): number {
-		return this._order;
-	}
-	public set order(value: number) {
-		this._order = value;
-	}
-
-	private _includeAllSR: boolean;
-	public get includeAllSR(): boolean {
-		return this._includeAllSR;
-	}
-	public set includeAllSR(value: boolean) {
-		this._includeAllSR = value;
-	}
-
-	private _includeALLR: boolean;
-	public get includeALLR(): boolean {
-		return this._includeALLR;
-	}
-	public set includeALLR(value: boolean) {
-		this._includeALLR = value;
-	}
-
-	private _units: Unit[];
-	public get units(): Unit[] {
-		return this._units;
-	}
-	public set units(value: Unit[]) {
-		this._units = value;
-	}
-
-	private _rateUpUnits: Unit[];
-	public get rateUpUnits(): Unit[] {
-		return this._rateUpUnits;
-	}
-	public set rateUpUnits(value: Unit[]) {
-		this._rateUpUnits = value;
-	}
-
-	private _rUnits: Unit[];
-	public get rUnits(): Unit[] {
-		return this._rUnits;
-	}
-	public set rUnits(value: Unit[]) {
-		this._rUnits = value;
-	}
-
-	private _srUnits: Unit[];
-	public get srUnits(): Unit[] {
-		return this._srUnits;
-	}
-	public set srUnits(value: Unit[]) {
-		this._srUnits = value;
-	}
-
-	private _nonRateUpSSRUnits: Unit[];
-	public get nonRateUpSSRUnits(): Unit[] {
-		return this._nonRateUpSSRUnits;
-	}
-	public set nonRateUpSSRUnits(value: Unit[]) {
-		this._nonRateUpSSRUnits = value;
-	}
-
-	private _ssrUnits: Unit[];
-	public get ssrUnits(): Unit[] {
-		return this._ssrUnits;
-	}
-	public set ssrUnits(value: Unit[]) {
-		this._ssrUnits = value;
-	}
-
-	private _allUnits: Unit[];
-	public get allUnits(): Unit[] {
-		return this._allUnits;
-	}
-	public set allUnits(value: Unit[]) {
-		this._allUnits = value;
-	}
-
-	private _ssrUnitRate: number;
-	public get ssrUnitRate(): number {
-		return this._ssrUnitRate;
-	}
-	public set ssrUnitRate(value: number) {
-		this._ssrUnitRate = value;
-	}
-
-	private _ssrUnitRateUp: number;
-	public get ssrUnitRateUp(): number {
-		return this._ssrUnitRateUp;
-	}
-	public set ssrUnitRateUp(value: number) {
-		this._ssrUnitRateUp = value;
-	}
-
-	private _srUnitRate: number;
-	public get srUnitRate(): number {
-		return this._srUnitRate;
-	}
-	public set srUnitRate(value: number) {
-		this._srUnitRate = value;
-	}
-
-	private _rUnitRate: number;
-	public get rUnitRate(): number {
-		return this._rUnitRate;
-	}
-	public set rUnitRate(value: number) {
-		this._rUnitRate = value;
-	}
-
-	private _ssrChance: number;
-	public get ssrChance(): number {
-		return this._ssrChance;
-	}
-	public set ssrChance(value: number) {
-		this._ssrChance = value;
-	}
-
-	private _ssrRateUpChance: number;
-	public get ssrRateUpChance(): number {
-		return this._ssrRateUpChance;
-	}
-	public set ssrRateUpChance(value: number) {
-		this._ssrRateUpChance = value;
-	}
-
-	private _srChance: number;
-	public get srChance(): number {
-		return this._srChance;
-	}
-	public set srChance(value: number) {
-		this._srChance = value;
-	}
-
-	private _unitListImage: Canvas[];
-	public get unitListImage(): Canvas[] {
-		return this._unitListImage;
-	}
-	public set unitListImage(value: Canvas[]) {
-		this._unitListImage = value;
-	}
+	public readonly uniqueName: string;
+	public readonly names: string[];
+	public readonly prettyName: string;
+	public readonly bannerType: number;
+	public readonly background: string;
+	public readonly shaftable: boolean;
+	public readonly loyalty: number;
+	public readonly order: number;
+	public readonly includeAllSR: boolean;
+	public readonly includeALLR: boolean;
+	public units: Unit[];
+	public rateUpUnits: Unit[];
+	public rUnits: Unit[];
+	public srUnits: Unit[];
+	public nonRateUpSSRUnits: Unit[];
+	public ssrUnits: Unit[];
+	public allUnits: Unit[];
+	public readonly ssrUnitRate: number;
+	public readonly ssrUnitRateUp: number;
+	public readonly srUnitRate: number;
+	public readonly rUnitRate: number;
+	public ssrChance: number;
+	public ssrRateUpChance: number;
+	public srChance: number;
+	public unitListImage: Canvas[];
 
 	constructor(
 		name: string[],
@@ -236,9 +63,6 @@ export default class Banner {
 
 		this.units = units;
 
-		if (sr_unit_rate !== 0 && include_all_sr) this.units.push(...srUnitList.values());
-		if (r_unit_rate !== 0 && include_all_r) this.units.push(...rUnitList.values());
-
 		this.rateUpUnits = rate_up_units;
 
 		this.rUnits = this.units.filter(u => u.grade === Grade.R);
@@ -262,6 +86,9 @@ export default class Banner {
 
 	public async reload(newUnits: Collection<number, Unit>) {
 		this.units = [...newUnits.values()];
+
+		if (this.srUnitRate !== 0 && this.includeAllSR) this.units.push(...(await unitCache.getAll()).filter(u => u.grade === Grade.SR && u.event === Event.BASE_GAME));
+		if (this.rUnitRate !== 0 && this.includeALLR) this.units.push(...(await unitCache.getAll()).filter(u => u.grade === Grade.R && u.event === Event.BASE_GAME));
 
 		this.rUnits = this.units.filter(u => u.grade === Grade.R);
 		this.srUnits = this.units.filter(u => u.grade === Grade.SR);
@@ -318,7 +145,7 @@ export default class Banner {
 			let canvas = createCanvas(0, 0);
 			let ctx = canvas.getContext("2d");
 
-			canvas.width = IMG_SIZE + ctx.measureText(longestNamedUnit(new Collection(units.map(u => [u.id, u]))).name + " - 99.9999%").width + 5;
+			canvas.width = IMG_SIZE + ctx.measureText(longestNamedUnit(units).name + " - 99.9999%").width + 5;
 			canvas.height = IMG_SIZE * units.length + 9 * (units.length - 1);
 
 			ctx = canvas.getContext("2d");

@@ -1,20 +1,10 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction, CacheType, GuildMember } from "discord.js";
+import ICommandExecutor from "../../interfaces/i-command-executor";
+import Banner from "../../models/banner";
 import { bannerByName } from "../../utils/banners";
-import { CacheType, CommandInteraction, GuildMember } from "discord.js";
-import { ICommand } from "../../interfaces/ICommand";
-import Banner from '../../models/banner';
-import { multi } from "../../utils/handlers/summonsHandler";
+import { multi } from "../../utils/handlers/summons-handler";
 
-export default class MultiCommand implements ICommand {
-	get data(): any {
-		return new SlashCommandBuilder()
-			.setName("multi")
-			.setDescription("Do a multi on any current banner.")
-			.addStringOption(option => option.setName("banner").setDescription("Which banner do you want to pull from?"))
-			.addMentionableOption(option => option.setName("for").setDescription("Who do you want to do a multi for?"))
-			.addIntegerOption(option => option.setName("amount").setDescription("How many multis do you want to do?"));
-	}
-
+export default class MultiCExecutor implements ICommandExecutor {
 	async execute(interaction: CommandInteraction<CacheType>): Promise<any> {
 		let banner: Banner,
 			amount: number = interaction.options.getInteger("amount"),

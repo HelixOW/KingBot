@@ -36,10 +36,10 @@ export class DefaultEmbed extends MessageEmbed {
 }
 
 export class ErrorEmbed extends DefaultEmbed {
-	constructor(title: string) {
+	constructor(title: string, trueTitle: string = "Error") {
 		super();
 
-		this.setTitle("Error");
+		this.setTitle(trueTitle);
 		this.setDescription(title);
 		this.setColor("#db1102");
 	}

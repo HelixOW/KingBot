@@ -1,13 +1,9 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { CacheType, CommandInteraction, Message, MessageActionRow, MessageAttachment, MessageComponentInteraction, MessageSelectMenu, WebhookEditMessageOptions } from "discord.js";
-import { scanForNewUnits } from "../utils/gcdatabase";
-import { DefaultEmbed, awaitSelection } from "../utils/embeds";
-import { ICommand } from "../interfaces/ICommand";
+import { CommandInteraction, CacheType, Message, MessageActionRow, MessageAttachment, MessageComponentInteraction, MessageSelectMenu, WebhookEditMessageOptions } from "discord.js";
+import ICommandExecutor from "../../interfaces/i-command-executor";
+import { DefaultEmbed, awaitSelection } from "../../utils/embeds";
+import { scanForNewUnits } from "../../utils/gcdatabase";
 
-export default class AdminCommand implements ICommand {
-	get data(): any {
-		return new SlashCommandBuilder().setName("admin").setDescription("Well well well").setDefaultPermission(false);
-	}
+export default class AdminCExecutor implements ICommandExecutor {
 	async execute(interaction: CommandInteraction<CacheType>): Promise<any> {
 		await interaction.deferReply();
 

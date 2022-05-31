@@ -1,4 +1,3 @@
-import { Collection } from "discord.js";
 import { IMG_SIZE } from "../utilities/constants";
 import { loadImage, Canvas } from "canvas";
 import { resizeImage } from "./display";
@@ -22,10 +21,6 @@ export const ALL_EVENT: Event[] = [
 	Event.RAGNAROK,
 ];
 export const ALL_AFFECTIONS: Affection[] = [Affection.SINS, Affection.COMMANDMENTS, Affection.CATASTROPHES, Affection.ANGELS, Affection.HOLY_KNIGHTS, Affection.NONE];
-
-export let unitList: Collection<number, Unit> = new Collection();
-export let rUnitList: Collection<number, Unit> = new Collection();
-export let srUnitList: Collection<number, Unit> = new Collection();
 
 export let frames: {
 	blue: { r: Canvas; sr: Canvas; ssr: Canvas };
@@ -69,10 +64,10 @@ function compose_icon(attribute, grade, background = null) {
         background = background
 }*/
 
-export function unitExists(name: string, grade: Grade, type: Type) {
+export async function unitExists(name: string, grade: Grade, type: Type): Promise<boolean> {
 	return (
-		[...unitList.values()].filter((u: Unit) => (u.simpleName.toLowerCase() === name || u.variationName.toLowerCase() === name) && u.grade === grade && u.type === type).length >
-		0
+		(await unitCache.getAll()).filter((u: Unit) => (u.simpleName.toLowerCase() === name || u.variationName.toLowerCase() === name) && u.grade === grade && u.type === type)
+			.length > 0
 	);
 }
 
@@ -80,36 +75,35 @@ export async function unitById(id: number): Promise<Unit> {
 	return await unitCache.get(id.toString());
 }
 
-export function unitByIds(ids: number[]): Collection<number, Unit> {
-	return unitList.filter(u => ids.includes(u.id));
+export async function unitsByIds(ids: number[]): Promise<Unit[]> {
+	return (await unitCache.getAll()).filter(u => ids.includes(u.id));
 }
 
-export function unitByName(name: string): Unit {
-	return unitList.find(u => u.name === name);
+export async function unitByName(name: string): Promise<Unit> {
+	return (await unitCache.getAll()).find(u => u.name === name);
 }
 
-export function unitByNames(names: string[]): Collection<number, Unit> {
-	return unitList.filter(u => names.includes(u.name));
+export async function unitsByNames(names: string[]): Promise<Unit[]> {
+	return (await unitCache.getAll()).filter(u => names.includes(u.name));
 }
 
-export function unitByVagueName(name: string, samples: Collection<number, Unit> = new Collection(unitList)): Collection<number, Unit> {
+export function unitByVagueName(name: string, samples: Unit[]): Unit[] {
 	name = name.toLowerCase().trim();
 
-	return samples.filter(u => {
-		return u.altNames.includes(name) || u.name.toLowerCase().includes(` ${name}`);
-	});
+	return samples.filter((u: Unit) => u.altNames.includes(name) || u.name.toLowerCase().includes(` ${name}`));
 }
 
-export function longestNamedUnit(samples: Collection<number, Unit> = unitList): Unit {
-	samples = new Collection<number, Unit>(samples);
+export function longestNamedUnit(samples: Unit[]): Unit {
+	samples = [...samples];
+
 	samples.sort((a, b) => {
 		return a.name.length - b.name.length;
 	});
 
-	return samples.first();
+	return samples[0];
 }
 
-export function sortUnits(unitList: Unit[]): void {
+export function sortUnitByCustom(unitList: Unit[]): void {
 	unitList.sort((a: Unit, b: Unit) => {
 		if (a.event === Event.CUSTOM) return -1;
 		else return 1;

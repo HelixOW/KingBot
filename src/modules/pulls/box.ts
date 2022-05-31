@@ -1,18 +1,11 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { MessageAttachment, CommandInteraction, GuildMember, CacheType } from "discord.js";
-import { DefaultEmbed, ErrorEmbed, sendNavigationMenu } from "../../utils/embeds";
-import { getBox, hasBox } from "../../utils/database_helper";
-import { ICommand } from "../../interfaces/ICommand";
-import { splitBoxDisplay } from "../../displays/boxDisplay";
+import { CommandInteraction, CacheType, GuildMember, MessageAttachment } from 'discord.js';
+import { splitBoxDisplay } from '../../displays/box-display';
+import ICommandExecutor from "../../interfaces/i-command-executor";
+import { hasBox, getBox } from '../../utils/database_helper';
+import { ErrorEmbed, sendNavigationMenu, DefaultEmbed } from '../../utils/embeds';
 
-export default class BoxCommand implements ICommand {
-	get data(): any {
-		return new SlashCommandBuilder()
-			.setName("box")
-			.setDescription("Shows the box.")
-			.addMentionableOption(option => option.setName("for").setDescription("Who do you want to do a single for?"));
-	}
 
+export default class BoxCExecutor implements ICommandExecutor {
 	async execute(interaction: CommandInteraction<CacheType>): Promise<void> {
 		let person: GuildMember = interaction.options.getMentionable("for") as GuildMember;
 

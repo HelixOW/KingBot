@@ -1,97 +1,12 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { MessageAttachment, MessageActionRow, MessageButton, CommandInteraction, CacheType } from "discord.js";
-import { DefaultEmbed, ErrorEmbed, sendMenu } from "../../utils/embeds";
+import { CommandInteraction, CacheType, MessageActionRow, MessageAttachment, MessageButton } from "discord.js";
+import { teamDisplay } from "../../displays/pvp-display";
+import ICommandExecutor from "../../interfaces/i-command-executor";
+import { Race, Type, Grade, Affection } from "../../models/unit";
+import { sendMenu, DefaultEmbed, ErrorEmbed } from "../../utils/embeds";
 import { chunk } from "../../utils/general";
-import { ICommand } from "../../interfaces/ICommand";
-import { getRandomTeam, getRandomUnit, replaceDuplicates } from "../../utils/handlers/pvpHandler";
-import { teamDisplay } from "../../displays/pvpDisplay";
-import { Race, Type, Grade, Event, Affection } from "../../models/unit";
+import { getRandomTeam, getRandomUnit, replaceDuplicates } from "../../utils/handlers/pvp-handler";
 
-export default class TeamCommand implements ICommand {
-	get data(): any {
-		return new SlashCommandBuilder()
-			.setName("team")
-			.setDescription("Returns a random team")
-			.addStringOption(option =>
-				option
-					.setName("race")
-					.setDescription("Does the team have a specific race?")
-					.addChoices([
-						["Demon", "demon"],
-						["Giant", "giant"],
-						["Human", "human"],
-						["Fairy", "fairy"],
-						["God", "god"],
-						["Unknown", "Unknown"],
-					])
-			)
-			.addStringOption(option =>
-				option
-					.setName("type")
-					.setDescription("Does the team have a specific type?")
-					.addChoices([
-						["Red", "red"],
-						["Green", "green"],
-						["Blue", "blue"],
-						["Dark", "dark"],
-						["Light", "light"],
-					])
-			)
-			.addStringOption(option =>
-				option
-					.setName("grade")
-					.setDescription("Does the team have a specific grade?")
-					.addChoices([
-						["SSR", "ssr"],
-						["SR", "sr"],
-						["R", "r"],
-					])
-			)
-			.addStringOption(option =>
-				option
-					.setName("event")
-					.setDescription("What event does the team come from?")
-					.addChoices([
-						["Grand Cross", "gc"],
-						["Slime", "slime"],
-						["Attack on Titan", "aot"],
-						["King of Fighters", "kof"],
-						["Valentines Day", "val"],
-						["New Year", "ny"],
-						["Halloween", "hw"],
-						["Festival", "fes"],
-						["Re: Zero", "re"],
-						["Stranger Things", "st"],
-						["Ragnarok", "ragna"],
-					])
-			)
-			.addStringOption(option =>
-				option
-					.setName("affection")
-					.setDescription("Does your team have any affection?")
-					.addChoices([
-						["Seven Deadly Sins", "sins"],
-						["The 10 Commandments", "commandments"],
-						["The 7 Catastrophes", "catastrophes"],
-						["Holy Knights", "knight"],
-						["Archangels", "angels"],
-						["None", "none"],
-					])
-			)
-			.addStringOption(option =>
-				option
-					.setName("banner")
-					.setDescription("Is the unit in any banner?")
-					.addChoices([
-						["General", "general"],
-						["Race I", "race one"],
-						["Race II", "race two"],
-						["Humans", "human"],
-						["Ragnarok", "ragnarok"],
-					])
-			);
-	}
-
+export default class TeamCExecutor implements ICommandExecutor {
 	async execute(interaction: CommandInteraction<CacheType>): Promise<any> {
 		let race = interaction.options.getString("race") === null ? null : [Race.fromString(interaction.options.getString("race"))];
 		let type = interaction.options.getString("type") === null ? null : [Type.fromString(interaction.options.getString("type"))];

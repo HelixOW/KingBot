@@ -1,4 +1,4 @@
-import { readCommands } from "./interfaces/ICommand";
+import { readCommands } from "./interfaces/i-command";
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 

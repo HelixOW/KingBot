@@ -1,6 +1,6 @@
-import IUnitDataHandler from "../../interfaces/IUnitDataHandler";
+import IUnitDataHandler from "../../interfaces/i-unit-data-handler";
 import { unitCache } from "../../utilities/cache";
-import { databaseHandler as db } from "../../utilities/databaseHandler";
+import { databaseHandler as db } from "../../utilities/database-handler";
 import { DBUnit } from "../../types/unit";
 import { Unit, Type, Race, Grade, Event, Affection } from "../../models/unit";
 

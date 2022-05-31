@@ -1,4 +1,6 @@
 import { Collection } from "discord.js";
+import { readdirSync, statSync, readFileSync } from "fs";
+import { join } from "path";
 
 export function getRandom(min: number, max: number): number {
 	return Math.random() * (max - min) + min;
@@ -46,4 +48,30 @@ export function removeItem<T>(array: T[], value: T, amount: number = 1): T[] {
 		} else ++i;
 	}
 	return array;
+}
+
+export function readDir(dir: string, fileCheck: { (file: string, abs: string): boolean }): { path: string; osFile: string }[] {
+	const foundFiles: { path: string; osFile: string }[] = [];
+
+	function rec(rDir: string) {
+		readdirSync(rDir).forEach(file => {
+			const abs = join(rDir, file);
+
+			if (statSync(abs).isDirectory()) return rec(abs);
+			else if (fileCheck(file, abs)) {
+				foundFiles.push({
+					path: rDir.replace("\\", "/"),
+					osFile: file,
+				});
+			}
+		});
+	}
+
+	rec(dir);
+
+	return foundFiles;
+}
+
+export function readFile(path: any): string {
+	return readFileSync(path).toString();
 }
