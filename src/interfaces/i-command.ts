@@ -1,20 +1,25 @@
 import ICommandExecutor from "./i-command-executor";
 import { readDir, readFile } from "../utils/general";
 import DefaultCExecutor from "../modules/module-not-activated";
+import { Collection } from "discord.js";
 
 export abstract class ICommand {
-	private _executor: ICommandExecutor;
+	private _executor: Collection<string, ICommandExecutor> = new Collection();
 
-	public get executor() {
+	public get executor(): Collection<string, ICommandExecutor> {
 		return this._executor;
 	}
 
-	public set executor(nExec: ICommandExecutor) {
-		this._executor = nExec;
+	public addExecutor(nExecutor: ICommandExecutor) {
+		this._executor.set(nExecutor.commandName(), nExecutor);
+	}
+
+	public set executor(nExecutors: Collection<string, ICommandExecutor>) {
+		this._executor = nExecutors;
 	}
 
 	public ICommand(executor: ICommandExecutor = new DefaultCExecutor()) {
-		this.executor = executor;
+		this.addExecutor(executor);
 	}
 
 	abstract get data(): any;

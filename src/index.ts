@@ -1,7 +1,7 @@
 import { Client, Collection, Intents } from "discord.js";
 import { ErrorEmbed } from "./utils/embeds";
 import { readCommands, ICommand } from "./interfaces/i-command";
-import UnitDataHandler from "./implementations/default/unit-data-handler";
+import unitDataHandler from "./implementations/default/unit-data-handler";
 import BannerDataHandler from "./implementations/default/banner-data-handler";
 import { readDir } from "./utils/general";
 
@@ -25,10 +25,9 @@ async function loadModules() {
 client.once("ready", async () => {
 	(await readCommands()).forEach((cmd: ICommand) => commands.set(cmd.data.name, cmd));
 
-	const unitDataHandler = new UnitDataHandler();
 	const bannerDataHandler = new BannerDataHandler();
 
-	unitDataHandler.readUnits();
+	await unitDataHandler.readUnits();
 	unitDataHandler.refreshTask();
 
 	bannerDataHandler.readBanners();
@@ -47,7 +46,11 @@ client.on("interactionCreate", async interaction => {
 	if (!command) return;
 
 	try {
-		await command.executor.execute(interaction);
+		try {
+			await command.executor.get(`${interaction.commandName} ${interaction.options.getSubcommand()}`).execute(interaction);
+		} catch (e) {
+			await command.executor.get(interaction.commandName).execute(interaction);
+		}
 	} catch (error) {
 		console.error(error);
 		await interaction.reply({

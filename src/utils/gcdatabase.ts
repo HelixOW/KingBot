@@ -112,15 +112,15 @@ export async function* scanForNewUnits(): AsyncGenerator<Unit, any, Unit> {
 		const unitType = Type.fromString(await page.evaluate(e => e.textContent.toLowerCase(), columnTags[1]));
 		const unitGrade = Grade.fromString(await page.evaluate(e => e.textContent.toLowerCase(), columnTags[2]));
 
+		console.log(await page.evaluate(e => e.textContent.toLowerCase(), linkTag));
+
 		if (unitExists(await page.evaluate(e => e.textContent.toLowerCase(), linkTag), unitGrade, unitType)) continue;
 
 		console.log("New Unit found! => ", await page.evaluate(e => e.textContent, linkTag));
 		const details = await scrapeUnitDetail(await page.evaluate(async e => await e.getAttribute("href"), linkTag));
 
-		//const id = latestUnitId() + 1;
-
-		/* let u = new Unit(
-			id,
+		let u = new Unit(
+			-1,
 			details.name,
 			await page.evaluate(e => e.textContent, linkTag),
 			await page.evaluate(e => e.textContent, linkTag),
@@ -130,17 +130,19 @@ export async function* scanForNewUnits(): AsyncGenerator<Unit, any, Unit> {
 			details.race,
 			Event.BASE_GAME,
 			Affection.NONE,
+			[],
+			"",
 			""
-		); */
+		);
 
 		const page2 = await browser.newPage();
 		await page2.goto(details.imgPath);
-		const imgTag = await page2.$("img");
 
-		//await imgTag.screenshot({ path: `./data/gc/icons/${id}.png` });
-		//u = await u.updateIcon();
+		u.iconURL = details.imgPath;
 
-		//yield u;
+		u = (await u.fetchIcon()).loadIcon();
+
+		yield u;
 	}
 
 	browser.close();

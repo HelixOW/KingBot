@@ -1,25 +1,7 @@
-import { Tedis } from "tedis";
-import ICache from "../interfaces/i-cache";
 import { Collection } from "discord.js";
 import { Unit } from "../models/unit";
 
-export abstract class RedisCache<C> implements ICache<C> {
-	private internalCache = new Tedis({ host: "85.214.28.184", port: 6379 });
-
-	async set(key: string, value: C): Promise<void> {
-		await this.internalCache.set(key, JSON.stringify(value));
-	}
-
-	async get(key: string, cls: new () => C): Promise<C> {
-		return Object.assign(new cls(), JSON.parse((await this.internalCache.get(key)).toString()));
-	}
-
-	async getAll(cls?: new () => C): Promise<C[]> {
-		return await Promise.all((await this.internalCache.keys("*")).map(async key => await this.get(key, cls)));
-	}
-}
-
-export class CollectionCache<C> implements ICache<C> {
+export class CollectionCache<C> {
 	private internalCollection: Collection<string, C> = new Collection();
 
 	async set(key: string, value: C): Promise<void> {
@@ -35,17 +17,33 @@ export class CollectionCache<C> implements ICache<C> {
 	}
 }
 
-class UnitCache extends CollectionCache<Unit> {
-	async get(key: string): Promise<Unit> {
-		return (await super.get(key)).loadIcon();
+class UnitCache {
+	private internalCollection: Collection<string, Unit> = new Collection();
+
+	set(key: string, value: Unit): void {
+		this.internalCollection.set(key, value);
 	}
 
-	async getAll(): Promise<Unit[]> {
-		return await Promise.all((await super.getAll()).map(async (u: Unit) => await u.loadIcon()));
+	get(key: string): Unit {
+		return this.internalCollection.get(key);
+	}
+
+	getAndLoad(key: string): Unit {
+		return this.get(key).loadIcon();
+	}
+
+	getAll(): Unit[] {
+		return [...this.internalCollection.values()];
+	}
+
+	getAllLoaded(): Unit[] {
+		return this.getAll().map((u: Unit) => u.loadIcon());
+	}
+
+	clear(): void {
+		this.internalCollection.clear();
 	}
 }
 
-export const cacheType: any = CollectionCache;
-
-export const unitCache: ICache<Unit> = new UnitCache();
-export const bannerCache = new cacheType();
+export const unitCache: UnitCache = new UnitCache();
+export const bannerCache = new CollectionCache();

@@ -64,27 +64,26 @@ function compose_icon(attribute, grade, background = null) {
         background = background
 }*/
 
-export async function unitExists(name: string, grade: Grade, type: Type): Promise<boolean> {
+export function unitExists(name: string, grade: Grade, type: Type): boolean {
 	return (
-		(await unitCache.getAll()).filter((u: Unit) => (u.simpleName.toLowerCase() === name || u.variationName.toLowerCase() === name) && u.grade === grade && u.type === type)
-			.length > 0
+		unitCache.getAll().filter((u: Unit) => (u.simpleName.toLowerCase() === name || u.variationName.toLowerCase() === name) && u.grade === grade && u.type === type).length > 0
 	);
 }
 
-export async function unitById(id: number): Promise<Unit> {
-	return await unitCache.get(id.toString());
+export function unitById(id: number): Unit {
+	return unitCache.get(id.toString());
 }
 
-export async function unitsByIds(ids: number[]): Promise<Unit[]> {
-	return (await unitCache.getAll()).filter(u => ids.includes(u.id));
+export function unitsByIds(ids: number[]): Unit[] {
+	return unitCache.getAll().filter(u => ids.includes(u.id));
 }
 
-export async function unitByName(name: string): Promise<Unit> {
-	return (await unitCache.getAll()).find(u => u.name === name);
+export function unitByName(name: string): Unit {
+	return unitCache.getAll().find(u => u.name === name);
 }
 
-export async function unitsByNames(names: string[]): Promise<Unit[]> {
-	return (await unitCache.getAll()).filter(u => names.includes(u.name));
+export function unitsByNames(names: string[]): Unit[] {
+	return unitCache.getAll().filter(u => names.includes(u.name));
 }
 
 export function unitByVagueName(name: string, samples: Unit[]): Unit[] {

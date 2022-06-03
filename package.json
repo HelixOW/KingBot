@@ -30,14 +30,10 @@
 		"node-canvas-text": "^1.0.2",
 		"pg": "^8.7.3",
 		"puppeteer": "^13.4.0",
-		"redis": "^4.1.0",
-		"redis-typescript": "^0.1.2",
 		"request": "^2.88.2",
-		"tedis": "^0.1.12",
 		"typescript": "^4.5.2"
 	},
 	"devDependencies": {
-		"@types/better-sqlite3": "^7.4.2",
 		"@types/jest": "^27.0.3",
 		"@types/pg": "^8.6.5",
 		"nodemon": "^2.0.15",

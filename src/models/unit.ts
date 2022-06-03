@@ -114,7 +114,7 @@ export class Type {
 			case "dark":
 				return "<:dark:930923204036407388>";
 			case "light":
-				return "light";
+				return "<:light:981684205656350819>";
 		}
 		return "";
 	}
@@ -332,18 +332,18 @@ export class Affection {
 
 export class Unit {
 	public readonly id: number;
-	public readonly name: string;
-	public readonly simpleName: string;
-	public readonly variationName: string;
-	public readonly altNames: string[] = [];
-	public readonly type: Type;
-	public readonly grade: Grade;
-	public readonly race: Race;
-	public readonly event: Event = Event.BASE_GAME;
-	public readonly affection: Affection = Affection.NONE;
-	public readonly iconURL: string;
-	public readonly emoji: string;
-	public readonly homeBanners: string[] = [];
+	public name: string;
+	public simpleName: string;
+	public variationName: string;
+	public altNames: string[] = [];
+	public type: Type;
+	public grade: Grade;
+	public race: Race;
+	public event: Event = Event.BASE_GAME;
+	public affection: Affection = Affection.NONE;
+	public iconURL: string;
+	public emoji: string;
+	public homeBanners: string[] = [];
 	public icon: Canvas;
 
 	public constructor(
@@ -401,17 +401,25 @@ export class Unit {
 		return embed;
 	}
 
-	public async loadIcon(): Promise<Unit> {
+	public async fetchIcon(): Promise<Unit> {
+		try {
+			const response = await axios.get(this.iconURL, { responseType: "arraybuffer" });
+			this.icon = resizeImage(await loadImage(Buffer.from(response.data, "utf-8")), IMG_SIZE, IMG_SIZE);
+		} catch (Error) {
+			console.log(`Unable to fetch icon for ${this.id} (${this.name}) [${this.iconURL}]`);
+		}
+
+		return this;
+	}
+
+	public loadIcon(): Unit {
 		try {
 			const canvas = createCanvas(IMG_SIZE, IMG_SIZE);
 			const ctx = canvas.getContext("2d");
 
-			const response = await axios.get(this.iconURL, { responseType: "arraybuffer" });
-			const icon = resizeImage(await loadImage(Buffer.from(response.data, "utf-8")), IMG_SIZE, IMG_SIZE);
-
 			ctx.save();
-			ctx.scale(IMG_SIZE / icon.width, IMG_SIZE / icon.height);
-			ctx.drawImage(icon, 0, 0);
+			ctx.scale(IMG_SIZE / this.icon.width, IMG_SIZE / this.icon.height);
+			ctx.drawImage(this.icon, 0, 0);
 			ctx.restore();
 
 			this.icon = canvas;
