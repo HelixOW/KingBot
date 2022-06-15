@@ -12,6 +12,7 @@
 			"request": "launch",
 			"restart": true,
 			"runtimeExecutable": "ts-node",
+			"cwd": "${workspaceFolder}/src/",
 			"skipFiles": ["<node_internals>/**"],
 			"type": "pwa-node"
 		}
