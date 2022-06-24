@@ -5,6 +5,7 @@ import unitDataHandler from "./implementations/default/unit-data-handler";
 import BannerDataHandler from "./implementations/default/banner-data-handler";
 import { readDir } from "./utils/general";
 import IModal, { readModals } from "./interfaces/i-modal";
+import ICommandExecutor from "./interfaces/i-command-executor";
 
 const { token } = require("../data/config.json");
 
@@ -19,7 +20,7 @@ async function loadModules() {
 
 			if (!cfg.active || !cfg.onLoad) return;
 
-			await cfg.onLoad(commands);
+			(await cfg.onLoad()).forEach((cExec: { name: string; exec: ICommandExecutor[] }) => cExec.exec.forEach(e => commands.get(cExec.name).addExecutor(e)));
 		})
 	);
 }
@@ -50,13 +51,20 @@ client.on("interactionCreate", async interaction => {
 
 	try {
 		try {
-			await command.executor.get(`${interaction.commandName} ${interaction.options.getSubcommand()}`).execute(interaction);
+			try {
+				await command.executor.get(`${interaction.commandName} ${interaction.options.getSubcommandGroup()} ${interaction.options.getSubcommand()}`).execute(interaction);
+			} catch (e2) {
+				try {
+					await command.executor.get(`${interaction.commandName} ${interaction.options.getSubcommand()}`).execute(interaction);
+				} catch (e3) {
+					throw e3;
+				}
+			}
 		} catch (e) {
 			try {
 				await command.executor.get(interaction.commandName).execute(interaction);
 			} catch (e2) {
-				console.error(e);
-				console.error(e2);
+				throw e;
 			}
 		}
 	} catch (error) {

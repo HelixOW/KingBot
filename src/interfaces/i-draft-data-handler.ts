@@ -11,9 +11,12 @@ export default interface IDraftDataHandler {
 	changeUnit(player: GuildMember, offer: Unit, wanted: Unit): Promise<void>;
 	hasUnit(player: GuildMember, check: Unit): Promise<boolean>;
 	getPlayers(guild: Guild): Promise<GuildMember[]>;
+	getUnits(player: GuildMember): Promise<Unit[]>;
 
 	getCurrentSeasonName(): Promise<string>;
 	getCurrentSeasonId(): Promise<number>;
+	startSeason(): Promise<void>;
+	isSeasonStarted(): Promise<boolean>;
 
 	refreshTask(): Promise<void>;
 }

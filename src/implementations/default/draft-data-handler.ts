@@ -2,6 +2,7 @@ import { GuildMember, Guild } from "discord.js";
 import IDraftDataHandler from "../../interfaces/i-draft-data-handler";
 import { Unit } from "../../models/unit";
 import { databaseHandler as db } from "../../utilities/database-handler";
+import { unitById } from "../../utils/units";
 
 export class DraftDataHandler implements IDraftDataHandler {
 	async signupPlayer(who: GuildMember): Promise<void> {
@@ -53,12 +54,28 @@ export class DraftDataHandler implements IDraftDataHandler {
 		);
 	}
 
+	async getUnits(player: GuildMember): Promise<Unit[]> {
+		return await Promise.all(
+			(
+				await db.pool.query("SELECT unit_id FROM clash_picked_units WHERE clash_id=$1 AND player_id=$2", [await this.getCurrentSeasonId(), player.id])
+			).rows.map(row => unitById(row.unit_id))
+		);
+	}
+
 	async getCurrentSeasonName(): Promise<string> {
 		return (await db.pool.query("SELECT season_name, MAX(season_id) FROM clashs GROUP BY season_id;")).rows.map(row => row.season_name)[0];
 	}
 
 	async getCurrentSeasonId(): Promise<number> {
 		return (await db.pool.query("SELECT MAX(season_id) as s_id FROM clashs GROUP BY season_id;")).rows.map(row => row.s_id)[0];
+	}
+
+	async startSeason(): Promise<void> {
+		await db.pool.query("UPDATE clashs SET drafting=True;");
+	}
+
+	async isSeasonStarted(): Promise<boolean> {
+		return (await db.pool.query("SELECT drafting FROM clashs WHERE season_id=$1", [await this.getCurrentSeasonId()])).rows[0].drafting;
 	}
 
 	refreshTask(): Promise<void> {

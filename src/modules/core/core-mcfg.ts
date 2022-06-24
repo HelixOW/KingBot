@@ -1,18 +1,16 @@
-import { Collection } from "discord.js";
-import { ICommand } from "../../interfaces/i-command";
-
 import FindCExecutor from "./find";
 import AdminAddCExecutor from "./admin-add";
 import AdminEditCExecutor from "./admin-edit";
 import AdminReloadCExecutor from "./admin-reload";
+import ICommandExecutor from "../../interfaces/i-command-executor";
 
 export const active: boolean = true;
 
-export function onLoad(cmds: Collection<String, ICommand>): void {
+export function onLoad(): { name: string; exec: ICommandExecutor[] }[] {
 	if (!active) return;
 
-	cmds.get("find").addExecutor(new FindCExecutor());
-	cmds.get("admin").addExecutor(new AdminAddCExecutor());
-	cmds.get("admin").addExecutor(new AdminEditCExecutor());
-	cmds.get("admin").addExecutor(new AdminReloadCExecutor());
+	return [
+		{ name: "find", exec: [new FindCExecutor()] },
+		{ name: "admin", exec: [new AdminAddCExecutor(), new AdminEditCExecutor(), new AdminReloadCExecutor()] },
+	];
 }
